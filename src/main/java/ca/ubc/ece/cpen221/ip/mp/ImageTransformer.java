@@ -88,7 +88,7 @@ public class ImageTransformer {
         for(int col = 0; col < this.width; col++) {
             for (int row = 0; row < this.height; row++) {
                 int originalPixel = image.getRGB(col, row);
-                mirrorImage.setRGB(col, this.width - row - 1, originalPixel);
+                mirrorImage.setRGB(this.width - col - 1, row, originalPixel);
             }
         }
 
