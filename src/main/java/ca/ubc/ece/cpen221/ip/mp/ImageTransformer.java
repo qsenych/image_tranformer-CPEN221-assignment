@@ -32,6 +32,10 @@ public class ImageTransformer {
      */
     public ImageTransformer(Image img) {
         // TODO: Implement this method
+
+        this.image = img;
+        this.width = img.width();
+        this.height = img.height();
     }
 
     /**
@@ -80,7 +84,15 @@ public class ImageTransformer {
      */
     public Image mirror() {
         // TODO: Implement this method
-        return null;
+        Image mirrorImage = new Image(this.width, this.height);
+        for(int col = 0; col < this.width; col++) {
+            for (int row = 0; row < this.height; row++) {
+                int originalPixel = image.getRGB(col, row);
+                mirrorImage.setRGB(col, this.width - row - 1, originalPixel);
+            }
+        }
+
+        return mirrorImage;
     }
 
     /**
