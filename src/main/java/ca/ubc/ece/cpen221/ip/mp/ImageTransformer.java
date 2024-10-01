@@ -172,7 +172,6 @@ public class ImageTransformer {
     /* ===== TASK 2 ===== */
 
     public Image denoise() {
-        // TODO: Implement this method
         Image cleanImage = new Image(this.width, this.height);
         for (int col = 0; col < this.width; col++) {
             for (int row = 0; row < this.height; row++) {
@@ -187,18 +186,11 @@ public class ImageTransformer {
                 ArrayList<Integer> blues = new ArrayList<Integer>();
 
                 for(int i = -1; i <= 1; i++) {
-                    for(int j = 1; j >= -1; j--) {
+                    for(int j = -1; j <= 1; j++) {
                         if(col + i >= 0 && col + i < this.width && row + j >= 0 && row + j < this.height) {
                             reds.add((image.getRGB(col + i, row + j) >> 16) & 0xFF);
                             greens.add((image.getRGB(col + i, row + j) >> 8) & 0xFF);
                             blues.add(image.getRGB(col + i, row + j) & 0xFF);
-                            /*
-                            redSum += (image.getRGB(col + i, row + j) >> 16) & 0xFF;
-                            greenSum += (image.getRGB(col + i, row + j) >> 8) & 0xFF;
-                            blueSum += image.getRGB(col + i, row + j) & 0xFF;
-                            neighbourCount++;
-
-                             */
                         }
                     }
                 }
@@ -227,9 +219,9 @@ public class ImageTransformer {
         int middle;
 
         if(list.size() % 2 == 1) {
-            middle = (list.get(list.size() / 2) + list.get(list.size() / 2 - 1)) / 2;
-        } else {
             middle = list.get(list.size() / 2);
+        } else {
+            middle = (list.get(list.size() / 2) + list.get(list.size() / 2 - 1)) / 2;
         }
 
         return middle;
@@ -239,14 +231,61 @@ public class ImageTransformer {
      * @return a weathered version of the image.
      */
     public Image weather() {
-        // TODO: Implement this method
-        return null;
+        Image weatheredImage = new Image(this.width, this.height);
+        for (int col = 0; col < this.width; col++) {
+            for (int row = 0; row < this.height; row++) {
+                int originalPixel = image.getRGB(col, row);
+                //(col-1, row+1), (col, row+1),  (col+1, row+1)
+                //(col-1, row)       pixel       (col+1, row)
+                //(col-1, row-1)  (col, row-1),  (col+1, row-1)
+
+                int redSum = 0;
+                ArrayList<Integer> reds = new ArrayList<Integer>();
+                ArrayList<Integer> greens = new ArrayList<Integer>();
+                ArrayList<Integer> blues = new ArrayList<Integer>();
+
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        if (col + i >= 0 && col + i < this.width && row + j >= 0 && row + j < this.height) {
+                            reds.add((image.getRGB(col + i, row + j) >> 16) & 0xFF);
+                            greens.add((image.getRGB(col + i, row + j) >> 8) & 0xFF);
+                            blues.add(image.getRGB(col + i, row + j) & 0xFF);
+                        }
+                    }
+                }
+
+                int alpha = (originalPixel >> 24) & 0xFF;
+                int red = Collections.min(reds);
+                int green = Collections.min(greens);
+                int blue = Collections.min(blues);
+
+                int weatheredPixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+                weatheredImage.setRGB(col, row, weatheredPixel);
+            }
+        }
+        return weatheredImage;
     }
 
+
     public Image blockPaint(int blockSize) {
+        Image blockedImage = new Image(this.width, this.height);
+        for (int col = 0; col < this.width; col++) {
+            for (int row = 0; row < this.height; row++) {
+                int originalPixel = image.getRGB(col, row);
+
+
+
+
+
+            }
+        }
+
         // TODO: Implement this method
-        return null;
+
+        return blockedImage;
     }
+
+    private int averageColourofBlock(int blockSize, int)
 
 
     /* ===== TASK 4 ===== */

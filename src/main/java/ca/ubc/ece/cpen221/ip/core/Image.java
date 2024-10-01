@@ -125,6 +125,10 @@ public final class Image implements ActionListener {
 
     /**
      * Creates a image by reading an image from a file or URL.
+     Image originalImg = new Image("resources/15088.jpg");
+     Image expectedImg = new Image("resources/tests/15088-mirror.png");
+     ImageTransformer t = new ImageTransformer(originalImg);
+     Image outputImage = t.mirror();
      *
      * @param name the name of the file (.png, .gif, or .jpg) or URL.
      * @throws IllegalArgumentException if cannot read image

@@ -6,6 +6,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Task2Tests {
+    @Test
+    public void test_Denoising() {
+        Image originalImg = new Image("resources/noised.png");
+        Image expectedImg = new Image("resources/denoised.png");
+        ImageTransformer t = new ImageTransformer(originalImg);
+        Image outputImage = t.denoise();
+        assertEquals(expectedImg, outputImage);
+    }
 
     @Test
     public void test_Weathering() {
