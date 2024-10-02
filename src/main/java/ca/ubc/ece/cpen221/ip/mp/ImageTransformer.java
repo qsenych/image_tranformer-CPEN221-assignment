@@ -269,23 +269,52 @@ public class ImageTransformer {
 
     public Image blockPaint(int blockSize) {
         Image blockedImage = new Image(this.width, this.height);
-        for (int col = 0; col < this.width; col++) {
-            for (int row = 0; row < this.height; row++) {
-                int originalPixel = image.getRGB(col, row);
+        for (int col = 0; col < this.width; col += blockSize) {
+            for (int row = 0; row < this.height; row += blockSize) {
+                int xBottomRight;
+                int yBottomRight;
+                //check for limits
+                xBottomRight = Math.min(col + blockSize, this.width);
+                yBottomRight = Math.min(row + blockSize, this.height);
 
-
-
-
-
+                Rectangle block = new Rectangle(col, row, xBottomRight, yBottomRight);
+                int colour = averageRectColour(block);
+                setRectColour(block, colour, blockedImage);
             }
         }
-
-        // TODO: Implement this method
 
         return blockedImage;
     }
 
-    private int averageColourofBlock(int blockSize, int)
+    private int averageRectColour(Rectangle rect) {
+        int redSum = 0;
+        int greenSum = 0;
+        int blueSum = 0;
+        int pixelCount = 0;
+
+        for(int col = rect.xTopLeft; col < rect.xBottomRight; col++) {
+            for(int row = rect.yTopLeft; row < rect.yBottomRight; row++) {
+                redSum += (image.getRGB(col, row) >> 16) & 0xFF;
+                greenSum += (image.getRGB(col, row) >> 8) & 0xFF;
+                blueSum += image.getRGB(col, row) & 0xFF;
+                pixelCount++;
+            }
+        }
+
+        int red = redSum/pixelCount;
+        int green = greenSum/pixelCount;
+        int blue = blueSum/pixelCount;
+
+        return (0xFF /* Alpha */ << 24) | (red << 16) | (green << 8) | blue;
+    }
+
+    private void setRectColour(Rectangle rect, int colour, Image img) {
+        for (int col = rect.xTopLeft; col < rect.xBottomRight; col++) {
+            for (int row = rect.yTopLeft; row < rect.yBottomRight; row++) {
+                img.setRGB(col, row, colour);
+            }
+        }
+    }
 
 
     /* ===== TASK 4 ===== */

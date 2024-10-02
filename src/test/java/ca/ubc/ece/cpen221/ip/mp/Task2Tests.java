@@ -18,9 +18,27 @@ public class Task2Tests {
     @Test
     public void test_Weathering() {
         Image originalImg = new Image("resources/95006.jpg");
-        Image expectsedImg = new Image("resources/tests/95006-weathered.png");
+        Image expectedImg = new Image("resources/tests/95006-weathered.png");
         ImageTransformer t = new ImageTransformer(originalImg);
         Image outputImage = t.weather();
+        assertEquals(expectedImg, outputImage);
+    }
+
+    @Test
+    public void test_Blocks() {
+        Image originalImg = new Image("resources/95006.jpg");
+        Image expectedImg = new Image("resources/tests/95006-seurat-4x4.png");
+        ImageTransformer t = new ImageTransformer(originalImg);
+        Image outputImage = t.blockPaint(4);
+        assertEquals(expectedImg, outputImage);
+    }
+
+    @Test
+    public void test_Blocks2() {
+        Image originalImg = new Image("resources/216053.jpg");
+        Image expectedImg = new Image("resources/tests/216053-seurat-3x3.png");
+        ImageTransformer t = new ImageTransformer(originalImg);
+        Image outputImage = t.blockPaint(3);
         assertEquals(expectedImg, outputImage);
     }
 }
