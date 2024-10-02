@@ -18,7 +18,7 @@ public class Task2Tests {
     @Test
     public void test_Weathering() {
         Image originalImg = new Image("resources/95006.jpg");
-        Image expectedImg = new Image("resources/tests/95006-weathered.png");
+        Image expectsedImg = new Image("resources/tests/95006-weathered.png");
         ImageTransformer t = new ImageTransformer(originalImg);
         Image outputImage = t.weather();
         assertEquals(expectedImg, outputImage);
