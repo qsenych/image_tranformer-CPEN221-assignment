@@ -2,7 +2,7 @@ package ca.ubc.ece.cpen221.ip.mp;
 
 import ca.ubc.ece.cpen221.ip.core.Image;
 
-import java.util.List;
+import java.util.*;
 import java.lang.Math;
 
 /**
@@ -57,11 +57,21 @@ public class ImageProcessing {
         return cSim;
     }
 
+    /**
+     * @param img A non empty image with the same width and height as every image in matchingCandidates
+     * @param matchingCandidates List of images with the same width and height as img
+     * @return A list including all images in matchingCandidates, sorted using cosine similarity, with best match appearing first
+     */
     public static List<Image> bestMatch(Image img, List<Image> matchingCandidates) {
-        // TODO: Implement this method
+        Map<Image, Double> map = new HashMap<>();
 
+        for(Image candidate : matchingCandidates) {
+            map.put(candidate, ImageProcessing.cosineSimilarity(img, candidate));
+        }
 
-        return null;
+        List<Image> sortedImages = new ArrayList<>(map.keySet());
+        sortedImages.sort((img1, img2) -> map.get(img2).compareTo(map.get(img1)));
+
+        return sortedImages;
     }
-
 }
