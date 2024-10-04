@@ -16,8 +16,8 @@ public class ImageProcessing {
     /**
      * Computes the cosine similarity of 2 images of the same size
      *
-     * @param img1 32 bit ARGB or 16 bit RGB image with the same height AND width as img2
-     * @param img2 32 bit ARGB or 16 bit RGB image with the same height AND width as img2
+     * @param img1 32 bit ARGB or 24 bit RGB image with the same height AND width as img2
+     * @param img2 32 bit ARGB or 24 bit RGB image with the same height AND width as img2
      * @return a double of the cosine similarity
      */
     public static double cosineSimilarity(Image img1, Image img2) {
