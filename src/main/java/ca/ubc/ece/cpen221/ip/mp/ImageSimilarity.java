@@ -3,8 +3,8 @@ package ca.ubc.ece.cpen221.ip.mp;
 import ca.ubc.ece.cpen221.ip.core.Image;
 
 public class ImageSimilarity {
-    private Image img;
-    private double similarity;
+    private final Image img;
+    private final double similarity;
 
     public ImageSimilarity(Image img, double similarity) {
         this.img = img;

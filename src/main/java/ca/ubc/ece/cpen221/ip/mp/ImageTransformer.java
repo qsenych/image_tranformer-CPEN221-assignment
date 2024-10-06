@@ -174,6 +174,21 @@ public class ImageTransformer {
         return posterizedImage;
     }
 
+    public Image clip(Rectangle rect) {
+        int newWidth = rect.xBottomRight - rect.xTopLeft;
+        int newHeight = rect.yBottomRight - rect.yTopLeft;
+
+        Image clippedImg = new Image(newWidth + 1, newHeight + 1);
+        for (int col = 0; col <= newWidth; col++) {
+            for (int row = 0; row <= newHeight; row++) {
+                int oldColour = this.image.getRGB(rect.xTopLeft + col, rect.yTopLeft + row);
+                clippedImg.setRGB(col, row, oldColour);
+            }
+        }
+
+        return clippedImg;
+    }
+
 
     /* ===== TASK 2 ===== */
 
@@ -346,8 +361,7 @@ public class ImageTransformer {
     /**
      *  Sets an entire rectangle of an image to a specific colour
      *
-     * @param rect A rectangle which is contained entirely within the image height and width
-     * @param colour A 24-bit colour integer detailing the RGB colour to set the block
+     * @param rect A rectangle which is contained entirely within the image height and width * @param colour A 24-bit colour integer detailing the RGB colour to set the block
      * @param img the image to be modified. Must be non-null and contain the pixels described in rect
      */
     private void setRectColour(Rectangle rect, int colour, Image img) {
@@ -364,6 +378,16 @@ public class ImageTransformer {
 
     public Image greenScreen(Color screenColour, Image backgroundImage) {
         // TODO: Implement this method
+
+        //find largest region
+
+        //fit background Image
+
+        //replace region with background image
+
+
+
+
         return null;
     }
 
