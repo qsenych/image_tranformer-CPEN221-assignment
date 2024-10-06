@@ -5,6 +5,7 @@ import ca.ubc.ece.cpen221.ip.core.ImageProcessingException;
 import ca.ubc.ece.cpen221.ip.core.Rectangle;
 
 import java.awt.Color;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.ArrayList;
 
@@ -280,10 +281,10 @@ public class ImageTransformer {
     }
 
     /**
-     * Replaces each blocksize x blocksize area of pixels in the image by the average
+     * Replaces each blocksize x blocksize area of pixels in the image by the average pixel colour
      *
-     * @param blockSize
-     * @return
+     * @param blockSize: An integer greater than 0.
+     * @return a non-null image with the colour set
      */
     public Image blockPaint(int blockSize) {
         Image blockedImage = new Image(this.width, this.height);
@@ -304,28 +305,51 @@ public class ImageTransformer {
         return blockedImage;
     }
 
+    /**
+     * Helper function to calculate average colour over a rectangle
+     *
+     * @param rect: A non-0 the rectangle to be averaged over
+     * @return An integer describing the average RGB colour value in the rectangle
+     */
     private int averageRectColour(Rectangle rect) {
-        int redSum = 0;
+        /*int redSum = 0;
         int greenSum = 0;
         int blueSum = 0;
-        int pixelCount = 0;
+         */
+        long pixelCount = 0;
+
+        BigInteger redSum = BigInteger.ZERO;
+        BigInteger greenSum = BigInteger.ZERO;
+        BigInteger blueSum = BigInteger.ZERO;
 
         for(int col = rect.xTopLeft; col < rect.xBottomRight; col++) {
             for(int row = rect.yTopLeft; row < rect.yBottomRight; row++) {
-                redSum += (image.getRGB(col, row) >> 16) & 0xFF;
-                greenSum += (image.getRGB(col, row) >> 8) & 0xFF;
-                blueSum += image.getRGB(col, row) & 0xFF;
+                int red = (image.getRGB(col, row) >> 16) & 0xFF;
+                int green = (image.getRGB(col, row) >> 8) & 0xFF;
+                int blue = image.getRGB(col, row) & 0xFF;
+
+                redSum = redSum.add(BigInteger.valueOf(red));
+                greenSum = greenSum.add(BigInteger.valueOf(green));
+                blueSum = blueSum.add(BigInteger.valueOf(blue));
+
                 pixelCount++;
             }
         }
 
-        int red = redSum/pixelCount;
-        int green = greenSum/pixelCount;
-        int blue = blueSum/pixelCount;
+        int red = redSum.divide(BigInteger.valueOf(pixelCount)).intValue();
+        int green = greenSum.divide(BigInteger.valueOf(pixelCount)).intValue();
+        int blue = blueSum.divide(BigInteger.valueOf(pixelCount)).intValue();
 
         return (0xFF /* Alpha */ << 24) | (red << 16) | (green << 8) | blue;
     }
 
+    /**
+     *  Sets an entire rectangle of an image to a specific colour
+     *
+     * @param rect A rectangle which is contained entirely within the image height and width
+     * @param colour A 24-bit colour integer detailing the RGB colour to set the block
+     * @param img the image to be modified. Must be non-null and contain the pixels described in rect
+     */
     private void setRectColour(Rectangle rect, int colour, Image img) {
         for (int col = rect.xTopLeft; col < rect.xBottomRight; col++) {
             for (int row = rect.yTopLeft; row < rect.yBottomRight; row++) {
