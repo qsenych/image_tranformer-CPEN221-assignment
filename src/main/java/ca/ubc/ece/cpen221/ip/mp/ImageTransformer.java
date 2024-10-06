@@ -1,13 +1,14 @@
 package ca.ubc.ece.cpen221.ip.mp;
 
 import ca.ubc.ece.cpen221.ip.core.Image;
-import ca.ubc.ece.cpen221.ip.core.ImageProcessingException;
 import ca.ubc.ece.cpen221.ip.core.Rectangle;
 
 import java.awt.Color;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * This datatype (or class) provides operations for transforming an image.
@@ -361,7 +362,8 @@ public class ImageTransformer {
     /**
      *  Sets an entire rectangle of an image to a specific colour
      *
-     * @param rect A rectangle which is contained entirely within the image height and width * @param colour A 24-bit colour integer detailing the RGB colour to set the block
+     * @param rect A rectangle which is contained entirely within the image height and width
+     * @param colour A 24-bit colour integer detailing the RGB colour to set the block
      * @param img the image to be modified. Must be non-null and contain the pixels described in rect
      */
     private void setRectColour(Rectangle rect, int colour, Image img) {
@@ -377,18 +379,109 @@ public class ImageTransformer {
 
 
     public Image greenScreen(Color screenColour, Image backgroundImage) {
-        // TODO: Implement this method
+        Image keyedImg = this.image;
+        ColourRegion region = findLargestRegion(screenColour);
 
-        //find largest region
+        if (!region.isValidRect()) return keyedImg;
 
-        //fit background Image
+        Rectangle rect = region.toRectangle();
 
-        //replace region with background image
+        for (int col = rect.xTopLeft, bgCol = 0; col <= rect.xBottomRight; col++, bgCol++) {
+            for (int row = rect.yTopLeft, bgRow = 0; row <= rect.yBottomRight; row++, bgRow++) {
+
+                //for tiling the background image
+                if (bgCol >= backgroundImage.width()) {
+                    bgCol = 0;
+                }
+                //for tiling the background image
+                if (bgRow >= backgroundImage.height()) {
+                    bgRow = 0;
+                }
+
+                if (region.pixels[col][row]) {
+                    keyedImg.setRGB(col, row, backgroundImage.getRGB(bgCol, bgRow));
+                }
+            }
+        }
+        return keyedImg;
+    }
+
+    private ColourRegion findLargestRegion(Color screenColour) {
+        ColourRegion region = new ColourRegion(0,0,0,0, this.width, this.height);
+        boolean[][] visited = new boolean[this.width][this.height];
+        int biggestPixelCount = 0;
 
 
 
+        for (int col = 0; col < this.width; ++col) {
+            for (int row = 0; row < this.height; ++row) {
+                if (!visited[col][row] && image.get(col, row).equals(screenColour)) {
+                    ColourRegion currentRegion = bfs(col, row, screenColour, visited);
 
-        return null;
+                    if (currentRegion.pixelCount > biggestPixelCount) {
+                        biggestPixelCount = currentRegion.pixelCount;
+                        region = currentRegion;
+                    }
+                }
+            }
+        }
+
+        return region;
+    }
+
+    /**
+     *
+     *
+     * @param col
+     * @param row
+     * @param screenColour
+     * @param visited
+     * @return pixel count of colours
+     */
+    private ColourRegion bfs (int col, int row, Color screenColour, boolean[][] visited) {
+        Queue<int[]> queue = new LinkedList<>();
+        ColourRegion currRegion = new ColourRegion(col, row, col, row, this.width, this.height);
+
+        final int[][] directions = {
+                {-1, -1}, {-1, 0}, {-1, 1},
+                { 0, -1},          { 0, 1},
+                { 1, -1}, { 1, 0}, { 1, 1}
+        };
+
+        queue.offer(new int[]{col, row});
+        visited[col][row] = true;
+        currRegion.pixels[col][row] = true;
+
+        currRegion.pixelCount = 0;
+
+        while (!queue.isEmpty()) {
+            int[] pixel = queue.poll();
+            int curCol = pixel[0], curRow = pixel[1];
+            currRegion.pixelCount++;
+
+            currRegion.xTopLeft     = Math.min(currRegion.xTopLeft,     curCol);
+            currRegion.yTopLeft     = Math.min(currRegion.yTopLeft,     curRow);
+            currRegion.xBottomRight = Math.max(currRegion.xBottomRight, curCol);
+            currRegion.yBottomRight = Math.max(currRegion.yBottomRight, curRow);
+
+            for (int[] direction : directions) {
+                int newCol = curCol + direction[1];
+                int newRow = curRow + direction[0];
+
+                if (   newCol >= 0 && newCol < this.width
+                    && newRow >= 0 && newRow < this.height
+                    && !visited[newCol][newRow]
+                    && image.get(newCol, newRow).equals(screenColour)
+                ) {
+                    queue.offer(new int[]{newCol, newRow});
+                    visited[newCol][newRow] = true;
+                    currRegion.pixels[newCol][newRow] = true;
+                }
+            }
+        }
+
+
+        return currRegion;
     }
 
     /* ===== TASK 5 ===== */
