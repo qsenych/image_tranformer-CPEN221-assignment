@@ -4,10 +4,12 @@ cosImg1 = Image.new('RGB', (3, 3), "white")
 cosImg2 = Image.new('RGB', (3, 3), "white")
 cosImg3 = Image.new('RGB', (3, 3), "white")
 cosImg4 = Image.new('RGB', (3, 3), "white")
+cosImg5 = Image.new('RGB', (3, 3), "white")
 img1 = cosImg1.load()
 img2 = cosImg2.load()
 img3 = cosImg3.load()
 img4 = cosImg4.load()
+img5 = cosImg5.load()
 
 img1[0,0] = (1, 1, 1)
 img1[0,1] = (2, 2, 2)
@@ -64,6 +66,21 @@ img4[2,1] = (64, 64, 64)
 img4[2,2] = (64, 64, 64)
 
 
+
+
+img5[0,0] = (0, 0, 0)
+img5[0,1] = (0, 0, 0)
+img5[0,2] = (0, 0, 0)
+
+img5[1,0] = (0, 0, 0)
+img5[1,1] = (0, 0, 0)
+img5[1,2] = (0, 0, 0)
+
+img5[2,0] = (0, 0, 0)
+img5[2,1] = (0, 0, 0)
+img5[2,2] = (0, 0, 0)
+
+
 cosImg1.show()
 cosImg2.show()
 cosImg3.show()
@@ -72,3 +89,4 @@ cosImg1.save("cosImg1.png")
 cosImg2.save("cosImg2.png")
 cosImg3.save("cosImg3.png")
 cosImg4.save("cosImg4.png")
+cosImg5.save("cosImg5.png")

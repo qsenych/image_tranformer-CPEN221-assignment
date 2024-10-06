@@ -85,7 +85,6 @@ public class ImageTransformer {
      * @return the mirror image of the instance.
      */
     public Image mirror() {
-        // TODO: Implement this method
         Image mirrorImage = new Image(this.width, this.height);
         for(int col = 0; col < this.width; col++) {
             for (int row = 0; row < this.height; row++) {
@@ -105,7 +104,6 @@ public class ImageTransformer {
      * @return the negative of the instance.
      */
     public Image negative() {
-        // TODO: Implement this method
         Image negativeImage = new Image(this.width, this.height);
         for (int col = 0; col < this.width; col++) {
             for (int row = 0; row < this.height; row++) {
@@ -124,8 +122,15 @@ public class ImageTransformer {
         return negativeImage;
     }
 
+    /**
+     *  Produces an image the uses a restricted number of colours.
+     *  If colour value of pixel 0 <= colour <= 64, colour value is set to 32.
+     *  If colour value of pixel 64 < colour <= 128, colour value is set to 96.
+     *  If colour value of pixel 128 < colour <= 255, colour value is set to 222.
+     *
+     * @return a posterized version of the image
+     */
     public Image posterize() {
-        // TODO: Implement this method
         Image posterizedImage = new Image(this.width, this.height);
         for (int col = 0; col < this.width; col++) {
             for (int row = 0; row < this.height; row++) {
@@ -171,6 +176,11 @@ public class ImageTransformer {
 
     /* ===== TASK 2 ===== */
 
+    /**
+     *  Performs simple denoising by replacing each colour's value on a pixel by the median value of that and its neighbours
+     *
+     * @return a cleaned up Image.
+     */
     public Image denoise() {
         Image cleanImage = new Image(this.width, this.height);
         for (int col = 0; col < this.width; col++) {
@@ -210,7 +220,8 @@ public class ImageTransformer {
 
     /**
      * Calculates and returns the median of a list
-     * @param an unsorted ArrayList of integers
+     *
+     * @param list: an unsorted ArrayList of integers
      * @return the median of the ArrayList as an integer
      */
     private int listMedian(ArrayList<Integer> list) {
@@ -228,6 +239,8 @@ public class ImageTransformer {
     }
 
     /**
+     *  Weathers an image by replacing the colour value of a pixel with the minimum of that pixel and its neighbours.
+     *
      * @return a weathered version of the image.
      */
     public Image weather() {
@@ -266,7 +279,12 @@ public class ImageTransformer {
         return weatheredImage;
     }
 
-
+    /**
+     * Replaces each blocksize x blocksize area of pixels in the image by the average
+     *
+     * @param blockSize
+     * @return
+     */
     public Image blockPaint(int blockSize) {
         Image blockedImage = new Image(this.width, this.height);
         for (int col = 0; col < this.width; col += blockSize) {
