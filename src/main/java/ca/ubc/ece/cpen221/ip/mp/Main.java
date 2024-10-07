@@ -21,12 +21,12 @@ public class Main {
 
 
 
-        Image img3 = new Image("resources/dftImgs/smallwordsBlackRotate45.png");
+        Image img3 = new Image("resources/dftImgs/textRect38.png");
 
         ImageTransformer t2 = new ImageTransformer(img3);
-        Complex[] arr = {Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0)};
+        //Complex[] arr = {Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0)};
 
-        Complex[] result = t2.fft(arr);
+        //Complex[] result = t2.fft(arr);
 
 
 

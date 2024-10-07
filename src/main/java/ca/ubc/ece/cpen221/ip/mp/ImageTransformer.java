@@ -24,10 +24,11 @@ import java.util.Queue;
  */
 
 public class ImageTransformer {
-
     private Image image;
     private int width;
     private int height;
+    private Complex[][] dftMatrix;
+    private double[][] doubleDFT;
 
     /**
      * Creates an ImageTransformer with an image. The provided image is
@@ -490,40 +491,93 @@ public class ImageTransformer {
      * @return
      */
     public double getTextAlignmentAngle() {
-        // TODO: implement this method
-        return 0;
+        /*
+        int rows = dftMatrix.length;
+        int cols = dftMatrix[0].length;
+
+
+        double maxMag = 0.0;
+        int domCol = 0;
+        int domRow = 0;
+        for (int col = 1; col < cols; col++ ) {
+            for (int row = 1; row < rows; row++ ) {
+                if (dftMatrix[col][row].magnitude() > maxMag) {
+                    maxMag = dftMatrix[col][row].magnitude();
+                    domCol = col;
+                    domRow = row;
+                }
+            }
+        }
+         */
+        int rows = doubleDFT.length;
+        int cols = doubleDFT[0].length;
+        int minRadius = doubleDFT.length / 20;
+        int maxRadius = doubleDFT.length / 2;
+
+
+        //double maxMag = 0.0;
+        int domCol = cols / 2;
+        int domRow = rows / 2;
+        double maxDist = 0.0;
+        for (int row = 1; row < rows; row++ ) {
+            for (int col = 1; col < cols; col++ ) {
+                /*if (doubleDFT[col][row] > maxMag
+                        && !((col < cols/2 + radius) && (col > cols/2 - radius))
+                        && !(row < rows/2 + radius && row > rows/2 - radius)) {
+                    maxMag = doubleDFT[col][row];
+                    domCol = col;
+                    domRow = row;
+                }*/
+                if (Double.compare(doubleDFT[col][row], 1.0) > 0) {
+                    double dist = Math.hypot(col - cols / 2, row-rows / 2);
+
+                    if(dist > maxDist && dist > minRadius && dist < maxRadius) {
+                        //maxMag = doubleDFT[col][row];
+                        domCol = col;
+                        domRow = row;
+                    }
+                }
+            }
+        }
+
+        double rawAngle = Math.toDegrees(Math.atan2(domCol - cols / 2, domRow - rows / 2));
+        return rawAngle;
     }
 
     public Image alignTextImage() {
         final double threshold = 190.0;
-        /*
-        Preprocess
+        /*Preprocess
             black and white
-            Turn into power of 2 square (pad with zeros)
-         */
+            Turn into power of 2 square image (pad with zeros) */
         int maxDim = Math.max(this.width, this.height);
         int newSize = maxDim == 1 ? 1 : Integer.highestOneBit(maxDim - 1) * 2;
-
         Complex[][] bwImg = preProcessing(newSize, newSize);
 
         //find DFT of this image
-        Complex[][] dftMatrix = fft2D(bwImg);
-
-        //shift to centre the low frequencies
-        dftMatrix = fftShift(dftMatrix);
-
-        double[][] filteredFreq = threshholdMagnitude(dftMatrix, threshold);
-
-        //analyze somehow to get angle
+        this.dftMatrix = fft2D(bwImg);
 
         //rotate image
+
+        //shift to centre the low frequencies unnecessary
+        dftMatrix = fftShift(dftMatrix);
+        doubleDFT = threshholdMagnitude(dftMatrix, threshold);
+        //analyze somehow to get angle
+        //find angle
+        double angle = getTextAlignmentAngle();
+
         //for debugging
         complexMatrixToImage(dftMatrix, newSize, newSize);
-        Image dftImage = doubleMatrixToImage(filteredFreq, newSize, newSize);
-
+        doubleMatrixToImage(doubleDFT, newSize, newSize);
         return null;
     }
 
+    /**
+     * debug method
+     * @param matrixImg
+     * @param width
+     * @param height
+     * @return
+     */
     private Image complexMatrixToImage(Complex[][] matrixImg, int width, int height) {
         Image img = new Image(width, height);
         for(int col = 0; col < width; col++) {
@@ -535,6 +589,14 @@ public class ImageTransformer {
         img.save("resources/frequencySpectrumOutput.png");
         return img;
     }
+
+    /**
+     * debug method
+     * @param matrixImg
+     * @param width
+     * @param height
+     * @return
+     */
     private Image doubleMatrixToImage(double[][] matrixImg, int width, int height) {
         Image img = new Image(width, height);
         for(int col = 0; col < width; col++) {
@@ -579,6 +641,11 @@ public class ImageTransformer {
         return imageMatrix;
     }
 
+    /**
+     *
+     * @param img
+     * @return
+     */
     private Complex[][] fft2D(Complex[][] img) {
         int numRows = img.length;
         int numCols = img[0].length;
@@ -607,13 +674,12 @@ public class ImageTransformer {
 
 
     /**
-     * temporarily public for debugging
      *  Recursively implements the Cooley-Turkey FFT algorithm
      *
      * @param intensities a power of 2 sized array containing grayscale intensities
      * @return
      */
-    public Complex[] fft(Complex[] intensities) {
+    private Complex[] fft(Complex[] intensities) {
 
         int length = intensities.length;
 
@@ -649,7 +715,11 @@ public class ImageTransformer {
         return result;
     }
 
-
+    /**
+     * Probably unnecessary
+     * @param spectrum
+     * @return
+     */
     private Complex[][] fftShift(Complex[][] spectrum) {
         int numRows = spectrum.length;
         int numCols = spectrum[0].length;
@@ -667,6 +737,12 @@ public class ImageTransformer {
         return shifted;
     }
 
+    /**
+     * Probably unnecessary
+     * @param frequencies
+     * @param threshold
+     * @return
+     */
     private double[][] threshholdMagnitude(Complex[][] frequencies, double threshold) {
         double[][] filteredMags = new double[frequencies.length][frequencies[0].length];
         for (int row = 0; row < frequencies.length; row++) {
@@ -681,6 +757,8 @@ public class ImageTransformer {
 
         return filteredMags;
     }
+
+
 
 
 }
