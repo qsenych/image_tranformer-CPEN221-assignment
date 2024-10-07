@@ -490,14 +490,7 @@ public class ImageTransformer {
      * @return
      */
     public double getTextAlignmentAngle() {
-        int maxDim = Math.max(this.width, this.height);
-        int newSize = maxDim == 1 ? 1 : Integer.highestOneBit(maxDim - 1) * 2;
-        /*Preprocess
-            black and white
-            Turn into power of 2 square image (pad with zeros) */
-        Complex[][] bwImg = preProcessing(newSize, newSize);
-        this.dft = new ImageDFT(bwImg);
-
+        this.dft = new ImageDFT(this.image);
         return this.dft.findDominantAngle();
     }
 
@@ -528,35 +521,4 @@ public class ImageTransformer {
         return rotatedImg;
     }
 
-    /**
-     * Obtain the black/white version of the image and pad with black until the next power of 2 size.
-     * The image is first grayscaled then rounded to black or white values
-     *
-     * @return the black/white version of the instance.
-     */
-    private Complex[][] preProcessing(int newWidth, int newHeight) {
-        Image bwImage = new Image(newWidth, newHeight);
-        Complex[][] imageMatrix = new Complex[newWidth][newHeight];
-        for (int col = 0; col < newWidth; col++) {
-            for (int row = 0; row < newHeight; row++) {
-                if (col < width && row < height) {
-                    Color color = image.get(col, row);
-                    Color gray = Image.toGray(color);
-                    int colour = gray.getRGB() & 0xFF;
-                    if (colour > 128) {
-                        imageMatrix[col][row] = Complex.realToComplex(1.0); //represents white
-                        bwImage.set(col, row, Color.WHITE);
-                    } else {
-                        imageMatrix[col][row] = Complex.realToComplex(0.0);
-                        bwImage.set(col, row, Color.BLACK);
-                    }
-                } else {
-                    imageMatrix[col][row] = Complex.realToComplex(0.0);
-                    bwImage.set(col, row, Color.WHITE);
-                }
-            }
-        }
-        //bwImage.save("resources/dftImgs/smallGreenBW.png");
-        return imageMatrix;
-    }
 }

@@ -20,12 +20,12 @@ public class Main {
         Image img7 = new Image("resources/tests/12003-r30.png");
         Image img8 = new Image("resources/tests/12003-r75.png");
         Image img9 = new Image("resources/tests/rotate-15.png");
-        Image img = new Image("resources/rotatedImg.png");
+        Image img = new Image("resources/tests/blockRotate-37.png");
 
-        ImageTransformer t2 = new ImageTransformer(img3);
+        ImageTransformer t2 = new ImageTransformer(img7);
 
         Image outImg = t2.alignTextImage();
-        outImg.save("resources/rotatedImg.png");
+        outImg.save("resources/tests/12003-r30result.png");
 
         int i = 0;
 

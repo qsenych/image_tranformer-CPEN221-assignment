@@ -2,32 +2,86 @@ package ca.ubc.ece.cpen221.ip.mp;
 
 import ca.ubc.ece.cpen221.ip.core.Image;
 
+import java.awt.Color;
+
 public class ImageDFT {
     final static double DFT_THRESHOLD = 120.0;
-    final static int IGNORE_ANGLE_THRESHOLD = 8;
+    final static int IGNORE_ANGLE_THRESHOLD = 6;
     final static int ANGLE_RES = 360;
 
     private Complex[][] complexImg;
     private double[][] imgMagnitude;
 
-    public ImageDFT (Complex[][] _complexImg) {
-        complexImg = _complexImg.clone();
-        imgMagnitude = new double[_complexImg.length][_complexImg[0].length];
+    /**
+     *
+      * @param img
+     */
+    public ImageDFT (Image img) {
+        int maxDim = Math.max(img.width(), img.height());
+        int newSize = maxDim == 1 ? 1 : Integer.highestOneBit(maxDim - 1) * 2;
 
-    }
+        complexImg = preProcessing(img, newSize, newSize, img.width(), img.height());
+        imgMagnitude = new double[newSize][newSize];
 
-    public Complex[][] getComplexImg () { return complexImg.clone(); }
-    public double[][] getImgMagnitude () { return imgMagnitude.clone(); }
-
-    public double findDominantAngle() {
         fft2D();
         fftShift();
-        complexMatrixToImage(complexImg, complexImg.length, complexImg[0].length, "resources/unFilteredOutput.png");
         postprocess();
+    }
+
+    /**
+     * @return a copy of the complex representation of the image
+     */
+    public Complex[][] getComplexImg () { return complexImg.clone(); }
+
+    /**
+     * @return a copy of the imgMagnitude matrix
+     */
+    public double[][] getImgMagnitude () { return imgMagnitude.clone(); }
+
+    /**
+     * Obtain the black/white version of the image and pad with black until the next power of 2 size.
+     * The image is first grayscaled then rounded to black or white values
+     *
+     * @return the black/white version of the instance.
+     */
+    private Complex[][] preProcessing(Image image, int newWidth, int newHeight, int oldWidth, int oldHeight) {
+        Image bwImage = new Image(newWidth, newHeight);
+        Complex[][] imageMatrix = new Complex[newWidth][newHeight];
+        for (int col = 0; col < newWidth; col++) {
+            for (int row = 0; row < newHeight; row++) {
+                if (col < oldWidth && row < oldHeight) {
+                    Color color = image.get(col, row);
+                    Color gray = Image.toGray(color);
+                    int colour = gray.getRGB() & 0xFF;
+                    if (colour > 128) {
+                        imageMatrix[col][row] = Complex.realToComplex(1.0); //represents white
+                        bwImage.set(col, row, Color.WHITE);
+                    } else {
+                        imageMatrix[col][row] = Complex.realToComplex(0.0);
+                        bwImage.set(col, row, Color.BLACK);
+                    }
+                } else {
+                    imageMatrix[col][row] = Complex.realToComplex(0.0);
+                    bwImage.set(col, row, Color.WHITE);
+                }
+            }
+        }
+        //bwImage.save("resources/dftImgs/smallGreenBW.png");
+        return imageMatrix;
+    }
+
+    /**
+     * Object must be initalized with a s
+     *
+     * @return
+     */
+    public double findDominantAngle() {
+        //complexMatrixToImage(complexImg, complexImg.length, complexImg[0].length, "resources/unFilteredOutput.png");
         //this.imgMagnitude = rotate90();
-        doubleMatrixToImage(this.imgMagnitude, imgMagnitude.length, imgMagnitude[0].length, "resources/threshOutput.png");
+        //doubleMatrixToImage(this.imgMagnitude, imgMagnitude.length, imgMagnitude[0].length, "resources/threshOutput.png");
+        //doubleMatrixToImage(normalizeToGray(hough, hough.length, hough[0].length), hough.length, hough[0].length, "resources/houghOutput.png");
+
         double[][] hough = houghTranform();
-        doubleMatrixToImage(normalizeToGray(hough, hough.length, hough[0].length), hough.length, hough[0].length, "resources/houghOutput.png");
 
         int width = hough.length;
         int height = hough[0].length;
@@ -255,7 +309,4 @@ public class ImageDFT {
         }
         return matrixImg;
     }
-
-
-
 }
