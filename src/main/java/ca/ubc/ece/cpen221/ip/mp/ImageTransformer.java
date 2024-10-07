@@ -27,8 +27,9 @@ public class ImageTransformer {
     private Image image;
     private int width;
     private int height;
-    private Complex[][] dftMatrix;
-    private double[][] doubleDFT;
+    private double[][] processedImg;
+
+    final int ANGLE_RES = 360;
 
     /**
      * Creates an ImageTransformer with an image. The provided image is
@@ -491,61 +492,31 @@ public class ImageTransformer {
      * @return
      */
     public double getTextAlignmentAngle() {
-        /*
-        int rows = dftMatrix.length;
-        int cols = dftMatrix[0].length;
+        //cutting out 0, 90, 180 from possiblility
+        final int ignoreBoundary = 10;
+        double[][] hough = processedImg;
 
+        width = hough.length;
+        height = hough[0].length;
 
-        double maxMag = 0.0;
+        double maxMag = 0;
         int domCol = 0;
-        int domRow = 0;
-        for (int col = 1; col < cols; col++ ) {
-            for (int row = 1; row < rows; row++ ) {
-                if (dftMatrix[col][row].magnitude() > maxMag) {
-                    maxMag = dftMatrix[col][row].magnitude();
+
+        for (int col = ignoreBoundary; col < width - ignoreBoundary; col++ ) {
+            for (int row = 0; row < height; row++ ) {
+                if (col > width / 2 - ignoreBoundary && col < width / 2 + ignoreBoundary) col = 190;
+                if (hough[col][row] > maxMag ) {
+                    maxMag = hough[col][row];
                     domCol = col;
-                    domRow = row;
                 }
             }
         }
-         */
-        int rows = doubleDFT.length;
-        int cols = doubleDFT[0].length;
-        int minRadius = doubleDFT.length / 20;
-        int maxRadius = doubleDFT.length / 2;
-
-
-        //double maxMag = 0.0;
-        int domCol = cols / 2;
-        int domRow = rows / 2;
-        double maxDist = 0.0;
-        for (int row = 1; row < rows; row++ ) {
-            for (int col = 1; col < cols; col++ ) {
-                /*if (doubleDFT[col][row] > maxMag
-                        && !((col < cols/2 + radius) && (col > cols/2 - radius))
-                        && !(row < rows/2 + radius && row > rows/2 - radius)) {
-                    maxMag = doubleDFT[col][row];
-                    domCol = col;
-                    domRow = row;
-                }*/
-                if (Double.compare(doubleDFT[col][row], 1.0) > 0) {
-                    double dist = Math.hypot(col - cols / 2, row-rows / 2);
-
-                    if(dist > maxDist && dist > minRadius && dist < maxRadius) {
-                        //maxMag = doubleDFT[col][row];
-                        domCol = col;
-                        domRow = row;
-                    }
-                }
-            }
-        }
-
-        double rawAngle = Math.toDegrees(Math.atan2(domCol - cols / 2, domRow - rows / 2));
-        return rawAngle;
+        double angle = domCol / 2.0;
+        return angle > 90.0 ? 180.0 - angle : angle;
     }
 
     public Image alignTextImage() {
-        final double threshold = 190.0;
+        final double threshold = 175.0;
         /*Preprocess
             black and white
             Turn into power of 2 square image (pad with zeros) */
@@ -554,20 +525,23 @@ public class ImageTransformer {
         Complex[][] bwImg = preProcessing(newSize, newSize);
 
         //find DFT of this image
-        this.dftMatrix = fft2D(bwImg);
+        Complex[][] dftMatrix = fft2D(bwImg);
 
         //rotate image
 
         //shift to centre the low frequencies unnecessary
         dftMatrix = fftShift(dftMatrix);
-        doubleDFT = threshholdMagnitude(dftMatrix, threshold);
+        processedImg = threshholdMagnitude(dftMatrix, threshold);
         //analyze somehow to get angle
         //find angle
+        processedImg = houghTranform(processedImg);
         double angle = getTextAlignmentAngle();
 
         //for debugging
-        complexMatrixToImage(dftMatrix, newSize, newSize);
-        doubleMatrixToImage(doubleDFT, newSize, newSize);
+        complexMatrixToImage(dftMatrix, newSize, newSize, "resources/threshfrequencySpectrumOutput.png");
+        processedImg = normalizeToGray(processedImg, processedImg.length, processedImg[0].length);
+        doubleMatrixToImage(processedImg, processedImg.length, processedImg[0].length, "resources/houghOutput.png");
+
         return null;
     }
 
@@ -578,7 +552,7 @@ public class ImageTransformer {
      * @param height
      * @return
      */
-    private Image complexMatrixToImage(Complex[][] matrixImg, int width, int height) {
+    private Image complexMatrixToImage(Complex[][] matrixImg, int width, int height, String name) {
         Image img = new Image(width, height);
         for(int col = 0; col < width; col++) {
             for(int row = 0; row < height; row++) {
@@ -586,7 +560,7 @@ public class ImageTransformer {
                 img.setRGB(col, row, ((value & 0xFF) << 16) | ((value & 0xFF) << 8) | value & 0xFF);
             }
         }
-        img.save("resources/frequencySpectrumOutput.png");
+        img.save(name);
         return img;
     }
 
@@ -597,7 +571,7 @@ public class ImageTransformer {
      * @param height
      * @return
      */
-    private Image doubleMatrixToImage(double[][] matrixImg, int width, int height) {
+    private Image doubleMatrixToImage(double[][] matrixImg, int width, int height, String name) {
         Image img = new Image(width, height);
         for(int col = 0; col < width; col++) {
             for(int row = 0; row < height; row++) {
@@ -605,9 +579,25 @@ public class ImageTransformer {
                 img.setRGB(col, row, ((value & 0xFF) << 16) | ((value & 0xFF) << 8) | value & 0xFF);
             }
         }
-        img.save("resources/threshfrequencySpectrumOutput.png");
+        img.save(name);
         return img;
     }
+
+    private double[][] normalizeToGray(double[][] matrixImg, int width, int height) {
+        double max = 0.0;
+        for(int col = 0; col < width; col++) {
+            for(int row = 0; row < height; row++) {
+                if (matrixImg[col][row] > max) max = matrixImg[col][row];
+            }
+        }
+        for(int col = 0; col < width; col++) {
+            for(int row = 0; row < height; row++) {
+                matrixImg[col][row] = matrixImg[col][row] * 254.0 / max;
+            }
+        }
+        return matrixImg;
+    }
+
 
     /**
      * Obtain the black/white version of the image and pad with black until the next power of 2 size.
@@ -758,7 +748,27 @@ public class ImageTransformer {
         return filteredMags;
     }
 
+    private double[][] houghTranform(double[][] lineImg) {
 
+        int houghHeight = (int) (Math.sqrt(2) * Math.max(lineImg.length, lineImg[0].length));
+        //int maxDist = (int) Math.sqrt(lineImg.length * lineImg.length / 2.0 + lineImg[0].length * lineImg[0].length / 2.0);
 
+        double[][] houghSpace = new double[ANGLE_RES][houghHeight * 2];
 
+        for (int i = 0; i < lineImg.length; i++) {
+            for (int j = 0; j < lineImg[0].length; j++) {
+                if (lineImg[i][j] > 0.0) {
+                    for (int angle = 0; angle < ANGLE_RES; angle++) {
+                        int x = i - lineImg.length / 2;
+                        int y = j - lineImg[0].length / 2;
+                        //forcing angles between [0, 180]
+                        int r = (int) (x * Math.cos(Math.toRadians(angle / 2.0)) + y * Math.sin(Math.toRadians(angle / 2.0)));
+                        r += houghHeight;
+                        houghSpace[angle][r]++;
+                    }
+                }
+            }
+        }
+        return houghSpace;
+    }
 }

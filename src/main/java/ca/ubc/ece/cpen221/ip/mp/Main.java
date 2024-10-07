@@ -21,7 +21,7 @@ public class Main {
 
 
 
-        Image img3 = new Image("resources/dftImgs/textRect38.png");
+        Image img3 = new Image("resources/dftImgs/squareWordsRotate23.png");
 
         ImageTransformer t2 = new ImageTransformer(img3);
         //Complex[] arr = {Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0), Complex.realToComplex(255.0)};
@@ -31,13 +31,6 @@ public class Main {
 
 
         t2.alignTextImage();
-
-
-
-
-
-
-
 
         int i = 0;
 
