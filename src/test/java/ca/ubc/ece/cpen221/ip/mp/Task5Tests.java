@@ -31,7 +31,7 @@ public class Task5Tests {
     @Test
     public void angleTest2() {
         Image img = new Image("resources/tests/textRect38.png");
-        double expected = 37.0;
+        double expected = -37.0;
 
         ImageTransformer t1 = new ImageTransformer(img);
         double result = t1.getTextAlignmentAngle();
@@ -47,10 +47,21 @@ public class Task5Tests {
         double result = t1.getTextAlignmentAngle();
         assertEquals(expected, result);
     }
+
     @Test
     public void angleTest4() {
         Image img = new Image("resources/tests/12003-r75.png");
         double expected = 75.0;
+
+        ImageTransformer t1 = new ImageTransformer(img);
+        double result = t1.getTextAlignmentAngle();
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void angleTest6() {
+        Image img = new Image("resources/tests/rotate-15.png");
+        double expected = -15.0;
 
         ImageTransformer t1 = new ImageTransformer(img);
         double result = t1.getTextAlignmentAngle();

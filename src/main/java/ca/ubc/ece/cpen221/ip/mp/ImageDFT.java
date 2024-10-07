@@ -3,8 +3,8 @@ package ca.ubc.ece.cpen221.ip.mp;
 import ca.ubc.ece.cpen221.ip.core.Image;
 
 public class ImageDFT {
-    final static double DFT_THRESHOLD = 180.0;
-    final static int IGNORE_ANGLE_THRESHOLD = 10;
+    final static double DFT_THRESHOLD = 120.0;
+    final static int IGNORE_ANGLE_THRESHOLD = 8;
     final static int ANGLE_RES = 360;
 
     private Complex[][] complexImg;
@@ -22,7 +22,9 @@ public class ImageDFT {
     public double findDominantAngle() {
         fft2D();
         fftShift();
-        threshholdMagnitude();
+        complexMatrixToImage(complexImg, complexImg.length, complexImg[0].length, "resources/unFilteredOutput.png");
+        postprocess();
+        //this.imgMagnitude = rotate90();
         doubleMatrixToImage(this.imgMagnitude, imgMagnitude.length, imgMagnitude[0].length, "resources/threshOutput.png");
         double[][] hough = houghTranform();
         doubleMatrixToImage(normalizeToGray(hough, hough.length, hough[0].length), hough.length, hough[0].length, "resources/houghOutput.png");
@@ -43,7 +45,7 @@ public class ImageDFT {
             }
         }
         double angle = domCol / 2.0;
-        return angle > 90.0 ? 180.0 - angle : angle;
+        return angle - 90;
 
 
     }
@@ -53,23 +55,23 @@ public class ImageDFT {
      * @return
      */
     private void fft2D() {
-        int numRows = complexImg.length;
-        int numCols = complexImg[0].length;
-
-        for (int row = 0; row < numRows; row++) {
-            complexImg[row] = fft(complexImg[row]);
-        }
+        int numCols = complexImg.length;
+        int numRows = complexImg[0].length;
 
         for (int col = 0; col < numCols; col++) {
-            Complex[] column = new Complex[numRows];
-            for (int row = 0; row < numRows; row++) {
-                column[row] = complexImg[row][col];
+            complexImg[col] = fft(complexImg[col]);
+        }
+
+        for (int row = 0; row < numCols; row++) {
+            Complex[] fullRow = new Complex[numCols];
+            for (int col = 0; col < numCols; col++) {
+                fullRow[col] = complexImg[col][row];
             }
 
-            Complex[] tfColumn = fft(column);
+            Complex[] fftRow = fft(fullRow);
 
-            for (int row = 0; row < numRows; row++) {
-                complexImg[row][col] = tfColumn[row];
+            for (int col = 0; col < numCols; col++) {
+                complexImg[col][row] = fftRow[col];
             }
 
         }
@@ -122,15 +124,15 @@ public class ImageDFT {
      * @return
      */
     private void fftShift() {
-        int numRows = complexImg.length;
-        int numCols = complexImg[0].length;
-        Complex[][] shifted = new Complex[numRows][numCols];
+        int numCols = complexImg.length;
+        int numRows = complexImg[0].length;
+        Complex[][] shifted = new Complex[numCols][numRows];
 
-        for (int row = 0; row < numRows; row++) {
-            for (int col = 0; col < numCols; col++) {
+        for (int col = 0; col < numCols; col++) {
+            for (int row = 0; row < numRows; row++) {
                 int newRow = (row + numRows / 2) % numRows;
                 int newCol = (col + numCols / 2) % numCols;
-                shifted[newRow][newCol] = complexImg[row][col];
+                shifted[newCol][newRow] = complexImg[col][row];
             }
         }
         this.complexImg = shifted;
@@ -144,14 +146,17 @@ public class ImageDFT {
      * @param threshold
      * @return
      */
-    private void threshholdMagnitude() {
-        imgMagnitude = new double[complexImg.length][complexImg[0].length];
-        for (int row = 0; row < complexImg.length; row++) {
-            for (int col = 0; col < complexImg[0].length; col++) {
-                if (complexImg[row][col].magnitude() < DFT_THRESHOLD) {
-                    imgMagnitude[row][col] = 0.0;
+    private void postprocess() {
+        int numCols = complexImg.length;
+        int numRows = complexImg[1].length;
+        imgMagnitude = new double[numCols][numRows];
+
+        for (int col = 0; col < numCols; col++) {
+            for (int row = 0; row < numCols; row++) {
+                if (complexImg[col][row].magnitude() < DFT_THRESHOLD) {
+                    imgMagnitude[row][numCols - 1 - col] = 0.0;
                 } else {
-                    imgMagnitude[row][col] = complexImg[row][col].magnitude();
+                    imgMagnitude[row][numCols - 1 - col] = complexImg[col][row].magnitude();
                 }
             }
         }
@@ -180,6 +185,23 @@ public class ImageDFT {
         }
         return houghSpace;
     }
+
+    private double[][] rotate90() {
+        int numCols = this.imgMagnitude.length;
+        int numRows = this.imgMagnitude[1].length;
+
+        double[][] rotated= new double[numRows][numCols];
+
+        for (int col = 0; col < numCols; col++) {
+            for (int row = 0; row < numRows; row++) {
+                rotated[row][numCols - 1 - col] = imgMagnitude[col][row];
+            }
+        }
+        return rotated;
+    }
+
+
+
 
     /**
      * debug method

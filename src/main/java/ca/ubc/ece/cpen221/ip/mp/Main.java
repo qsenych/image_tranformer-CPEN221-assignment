@@ -11,7 +11,16 @@ public class Main {
     public static void main(String[] args) {
 
 
-        Image img3 = new Image("resources/tests/textRect38.png");
+        Image img1 = new Image("resources/tests/smallwordsBlackRotate45.png");
+        Image img2 = new Image("resources/tests/textRect38.png");
+        Image img3 = new Image("resources/tests/squareWordsRotate23.png");
+        Image img4 = new Image("resources/tests/squareLineRotate60.png");
+        Image img5 = new Image("resources/tests/exampleText.png");
+        Image img6 = new Image("resources/tests/testRotate45.png");
+        Image img7 = new Image("resources/tests/12003-r30.png");
+        Image img8 = new Image("resources/tests/12003-r75.png");
+        Image img9 = new Image("resources/tests/rotate-15.png");
+        Image img = new Image("resources/rotatedImg.png");
 
         ImageTransformer t2 = new ImageTransformer(img3);
 

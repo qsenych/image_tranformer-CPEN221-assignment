@@ -503,7 +503,7 @@ public class ImageTransformer {
 
     public Image alignTextImage() {
         double angle = getTextAlignmentAngle();
-        double radians = Math.toRadians(angle);
+        double radians = -1.0 * Math.toRadians(angle);
 
         int newWidth = (int) (Math.abs(width * Math.cos(radians))+ Math.abs(height * Math.sin(radians)));
         int newHeight = (int) (Math.abs(width * Math.sin(radians))+ Math.abs(height * Math.cos(radians)));
@@ -511,10 +511,10 @@ public class ImageTransformer {
 
         for(int col = 0; col < newWidth; col++) {
             for(int row = 0; row < newHeight; row++) {
-                int original_x = (int) ((col - width / 2) * Math.cos(radians) +
-                        (row - height / 2) * Math.sin(radians) + width / 2);
-                int original_y = (int) (-(col - width / 2) * Math.sin(radians) +
-                        (row - height / 2) * Math.cos(radians) + height / 2);
+                int original_x = (int) ((col - newWidth / 2.0) * Math.cos(radians) +
+                        (row - newHeight / 2.0) * Math.sin(radians) + width / 2.0);
+                int original_y = (int) (-(col - newWidth / 2.0) * Math.sin(radians) +
+                        (row - newHeight / 2.0) * Math.cos(radians) + height / 2.0);
                 if (original_x >= 0 && original_y >= 0 &&
                         original_x < width &&
                         original_y < height ) {
