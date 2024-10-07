@@ -15,7 +15,8 @@ public class Main {
 
         ImageTransformer t2 = new ImageTransformer(img3);
 
-        t2.alignTextImage();
+        Image outImg = t2.alignTextImage();
+        outImg.save("resources/rotatedImg.png");
 
         int i = 0;
 

@@ -503,10 +503,29 @@ public class ImageTransformer {
 
     public Image alignTextImage() {
         double angle = getTextAlignmentAngle();
+        double radians = Math.toRadians(angle);
 
+        int newWidth = (int) (Math.abs(width * Math.cos(radians))+ Math.abs(height * Math.sin(radians)));
+        int newHeight = (int) (Math.abs(width * Math.sin(radians))+ Math.abs(height * Math.cos(radians)));
+        Image rotatedImg = new Image(newWidth, newHeight);
 
+        for(int col = 0; col < newWidth; col++) {
+            for(int row = 0; row < newHeight; row++) {
+                int original_x = (int) ((col - width / 2) * Math.cos(radians) +
+                        (row - height / 2) * Math.sin(radians) + width / 2);
+                int original_y = (int) (-(col - width / 2) * Math.sin(radians) +
+                        (row - height / 2) * Math.cos(radians) + height / 2);
+                if (original_x >= 0 && original_y >= 0 &&
+                        original_x < width &&
+                        original_y < height ) {
+                    rotatedImg.set(col, row, image.get(original_x, original_y));
+                } else {
+                    rotatedImg.set(col, row, Color.WHITE);
+                }
+            }
+        }
 
-        return null;
+        return rotatedImg;
     }
 
     /**
