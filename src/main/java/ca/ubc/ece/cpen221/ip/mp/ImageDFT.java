@@ -4,6 +4,7 @@ import ca.ubc.ece.cpen221.ip.core.Image;
 
 import java.awt.Color;
 
+
 public class ImageDFT {
     final static double DFT_THRESHOLD = 120.0;
     final static int IGNORE_ANGLE_THRESHOLD = 6;
@@ -106,7 +107,6 @@ public class ImageDFT {
 
     /**
      *
-     * @return
      */
     private void fft2D() {
         int numCols = complexImg.length;
@@ -173,9 +173,7 @@ public class ImageDFT {
     }
 
     /**
-     * creates new Complex[][] which shifts the attached image
-     * @param spectrum
-     * @return
+     *
      */
     private void fftShift() {
         int numCols = complexImg.length;
@@ -195,10 +193,7 @@ public class ImageDFT {
 
 
     /**
-     * Probably unnecessary
-     * @param frequencies
-     * @param threshold
-     * @return
+     *
      */
     private void postprocess() {
         int numCols = complexImg.length;
@@ -216,9 +211,11 @@ public class ImageDFT {
         }
     }
 
-
+    /**
+     *
+     * @return
+     */
     private double[][] houghTranform() {
-
         int houghHeight = (int) (Math.sqrt(2) * Math.max(imgMagnitude.length, imgMagnitude[0].length));
 
         double[][] houghSpace = new double[ANGLE_RES][houghHeight * 2];
@@ -239,22 +236,6 @@ public class ImageDFT {
         }
         return houghSpace;
     }
-
-    private double[][] rotate90() {
-        int numCols = this.imgMagnitude.length;
-        int numRows = this.imgMagnitude[1].length;
-
-        double[][] rotated= new double[numRows][numCols];
-
-        for (int col = 0; col < numCols; col++) {
-            for (int row = 0; row < numRows; row++) {
-                rotated[row][numCols - 1 - col] = imgMagnitude[col][row];
-            }
-        }
-        return rotated;
-    }
-
-
 
 
     /**

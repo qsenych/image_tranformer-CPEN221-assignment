@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) {
 
 
-        Image img1 = new Image("resources/tests/smallwordsBlackRotate45.png");
+        Image img1 = new Image("resources/tests/Williamson-45.png");
         Image img2 = new Image("resources/tests/textRect38.png");
         Image img3 = new Image("resources/tests/squareWordsRotate23.png");
         Image img4 = new Image("resources/tests/squareLineRotate60.png");
@@ -22,10 +22,10 @@ public class Main {
         Image img9 = new Image("resources/tests/rotate-15.png");
         Image img = new Image("resources/tests/blockRotate-37.png");
 
-        ImageTransformer t2 = new ImageTransformer(img7);
+        ImageTransformer t2 = new ImageTransformer(img1);
 
         Image outImg = t2.alignTextImage();
-        outImg.save("resources/tests/12003-r30result.png");
+        outImg.save("resources/tests/Williamson-45result.png");
 
         int i = 0;
 

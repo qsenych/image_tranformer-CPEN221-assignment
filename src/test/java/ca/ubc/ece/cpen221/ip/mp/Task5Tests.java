@@ -79,4 +79,26 @@ public class Task5Tests {
         double sim = ImageProcessing.cosineSimilarity(expected, result);
         assertEquals(sim > 0.9, true);
     }
+
+    @Test
+    public void imgTest3() {
+        Image img = new Image("resources/tests/Descartes-50.png");
+        Image expected = new Image("resources/tests/Descartes-50result.png");
+        ImageTransformer t1 = new ImageTransformer(img);
+        Image result = t1.alignTextImage();
+
+        double sim = ImageProcessing.cosineSimilarity(expected, result);
+        assertEquals(sim > 0.9, true);
+    }
+
+    @Test
+    public void imgTest4() {
+        Image img = new Image("resources/tests/Williamson-45.png");
+        Image expected = new Image("resources/tests/Williamson-45result.png");
+        ImageTransformer t1 = new ImageTransformer(img);
+        Image result = t1.alignTextImage();
+
+        double sim = ImageProcessing.cosineSimilarity(expected, result);
+        assertEquals(sim > 0.9, true);
+    }
 }
