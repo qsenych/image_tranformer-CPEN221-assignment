@@ -36,7 +36,6 @@ public class ImageTransformer {
      * @param img is not null
      */
     public ImageTransformer(Image img) {
-        // TODO: Implement this method
 
         this.image = img;
         this.width = img.width();
@@ -485,31 +484,136 @@ public class ImageTransformer {
 
     /* ===== TASK 5 ===== */
 
-    public Image alignTextImage() {
-        // TODO: Implement this method
+    /**
+     * determines the angle by which the image should be rotated
+     * to get the text aligned
+     * @return
+     */
+    public double getTextAlignmentAngle() {
+        // TODO: implement this method
+        return 0;
+    }
 
+    public Image alignTextImage() {
+        final double threshold = 190.0;
         /*
         Preprocess
-            grayscale
             black and white
             Turn into power of 2 square (pad with zeros)
-
          */
-        Image grayTextImage = grayscale();
+        int maxDim = Math.max(this.width, this.height);
+        int newSize = maxDim == 1 ? 1 : Integer.highestOneBit(maxDim - 1) * 2;
 
+        Complex[][] bwImg = preProcessing(newSize, newSize);
 
+        //find DFT of this image
+        Complex[][] dftMatrix = fft2D(bwImg);
 
+        //shift to centre the low frequencies
+        dftMatrix = fftShift(dftMatrix);
+
+        double[][] filteredFreq = threshholdMagnitude(dftMatrix, threshold);
+
+        //analyze somehow to get angle
+
+        //rotate image
+        //for debugging
+        complexMatrixToImage(dftMatrix, newSize, newSize);
+        Image dftImage = doubleMatrixToImage(filteredFreq, newSize, newSize);
 
         return null;
     }
 
+    private Image complexMatrixToImage(Complex[][] matrixImg, int width, int height) {
+        Image img = new Image(width, height);
+        for(int col = 0; col < width; col++) {
+            for(int row = 0; row < height; row++) {
+                int value = (int) matrixImg[col][row].magnitude();
+                img.setRGB(col, row, ((value & 0xFF) << 16) | ((value & 0xFF) << 8) | value & 0xFF);
+            }
+        }
+        img.save("resources/frequencySpectrumOutput.png");
+        return img;
+    }
+    private Image doubleMatrixToImage(double[][] matrixImg, int width, int height) {
+        Image img = new Image(width, height);
+        for(int col = 0; col < width; col++) {
+            for(int row = 0; row < height; row++) {
+                int value = (int) matrixImg[col][row];
+                img.setRGB(col, row, ((value & 0xFF) << 16) | ((value & 0xFF) << 8) | value & 0xFF);
+            }
+        }
+        img.save("resources/threshfrequencySpectrumOutput.png");
+        return img;
+    }
+
     /**
+     * Obtain the black/white version of the image and pad with black until the next power of 2 size.
+     * The image is first grayscaled then rounded to black or white values
+     *
+     * @return the black/white version of the instance.
+     */
+    private Complex[][] preProcessing(int newWidth, int newHeight) {
+        Image bwImage = new Image(newWidth, newHeight);
+        Complex[][] imageMatrix = new Complex[newWidth][newHeight];
+        for (int col = 0; col < newWidth; col++) {
+            for (int row = 0; row < newHeight; row++) {
+                if (col < width && row < height) {
+                    Color color = image.get(col, row);
+                    Color gray = Image.toGray(color);
+                    int colour = gray.getRGB() & 0xFF;
+                    if (colour > 128) {
+                        imageMatrix[col][row] = Complex.realToComplex(1.0); //represents white
+                        bwImage.set(col, row, Color.WHITE);
+                    } else {
+                        imageMatrix[col][row] = Complex.realToComplex(0.0);
+                        bwImage.set(col, row, Color.BLACK);
+                    }
+                } else {
+                    imageMatrix[col][row] = Complex.realToComplex(0.0);
+                    bwImage.set(col, row, Color.WHITE);
+                }
+            }
+        }
+        //bwImage.save("resources/dftImgs/smallGreenBW.png");
+        return imageMatrix;
+    }
+
+    private Complex[][] fft2D(Complex[][] img) {
+        int numRows = img.length;
+        int numCols = img[0].length;
+
+        for (int row = 0; row < numRows; row++) {
+            img[row] = fft(img[row]);
+        }
+
+        for (int col = 0; col < numCols; col++) {
+            Complex[] column = new Complex[numRows];
+            for (int row = 0; row < numRows; row++) {
+                column[row] = img[row][col];
+            }
+
+            Complex[] tfColumn = fft(column);
+
+            for (int row = 0; row < numRows; row++) {
+                img[row][col] = tfColumn[row];
+            }
+
+        }
+        return img;
+    }
+
+
+
+
+    /**
+     * temporarily public for debugging
      *  Recursively implements the Cooley-Turkey FFT algorithm
      *
      * @param intensities a power of 2 sized array containing grayscale intensities
      * @return
      */
-    private Complex[] fft(Complex[] intensities) {
+    public Complex[] fft(Complex[] intensities) {
 
         int length = intensities.length;
 
@@ -532,9 +636,51 @@ public class ImageTransformer {
         }
         Complex[] oddResult = fft(odd);
 
-        Complex
+        Complex[] result = new Complex[length];
+        for (int i = 0; i < length / 2; i++) {
+            double rotation = -2.0 * i * Math.PI / length;
+            Complex complexValue =  new Complex(Math.cos(rotation), Math.sin(rotation));
+            result[i] = evenResult[i].add(complexValue.times(oddResult[i]));
+            result[i + length / 2] = evenResult[i].subtract(complexValue.times(oddResult[i]));
+        }
 
 
 
+        return result;
     }
+
+
+    private Complex[][] fftShift(Complex[][] spectrum) {
+        int numRows = spectrum.length;
+        int numCols = spectrum[0].length;
+        Complex[][] shifted = new Complex[numRows][numCols];
+
+        for (int row = 0; row < numRows; row++) {
+            for (int col = 0; col < numCols; col++) {
+                int newRow = (row + numRows / 2) % numRows;
+                int newCol = (col + numCols / 2) % numCols;
+                shifted[newRow][newCol] = spectrum[row][col];
+            }
+        }
+
+
+        return shifted;
+    }
+
+    private double[][] threshholdMagnitude(Complex[][] frequencies, double threshold) {
+        double[][] filteredMags = new double[frequencies.length][frequencies[0].length];
+        for (int row = 0; row < frequencies.length; row++) {
+            for (int col = 0; col < frequencies[0].length; col++) {
+                if (frequencies[row][col].magnitude() < threshold) {
+                    filteredMags[row][col] = 0.0;
+                } else {
+                    filteredMags[row][col] = frequencies[row][col].magnitude();
+                }
+            }
+        }
+
+        return filteredMags;
+    }
+
+
 }
