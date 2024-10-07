@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+
 /**
  * This datatype (or class) provides operations for transforming an image.
  *
@@ -479,8 +480,6 @@ public class ImageTransformer {
                 }
             }
         }
-
-
         return currRegion;
     }
 
@@ -488,6 +487,54 @@ public class ImageTransformer {
 
     public Image alignTextImage() {
         // TODO: Implement this method
+
+        /*
+        Preprocess
+            grayscale
+            black and white
+            Turn into power of 2 square (pad with zeros)
+
+         */
+        Image grayTextImage = grayscale();
+
+
+
+
         return null;
+    }
+
+    /**
+     *  Recursively implements the Cooley-Turkey FFT algorithm
+     *
+     * @param intensities a power of 2 sized array containing grayscale intensities
+     * @return
+     */
+    private Complex[] fft(Complex[] intensities) {
+
+        int length = intensities.length;
+
+        if (length == 1) return new Complex[]{intensities[0]};
+
+        //if ((int)(Math.ceil((Math.log(length) / Math.log(2)))) == (int)(Math.floor(((Math.log(length) / Math.log(2)))))) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("Input array must be power of 2");
+        }
+
+        Complex[] even = new Complex[length / 2];
+        for (int i = 0; i < length / 2; i++)  {
+            even[i] = intensities[i * 2];
+        }
+        Complex[] evenResult = fft(even);
+
+        Complex[] odd = new Complex[length / 2];
+        for (int i = 0; i < length / 2; i++)  {
+            odd[i] = intensities[i * 2 + 1];
+        }
+        Complex[] oddResult = fft(odd);
+
+        Complex
+
+
+
     }
 }
