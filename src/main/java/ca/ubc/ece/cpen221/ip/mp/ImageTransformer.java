@@ -27,9 +27,7 @@ public class ImageTransformer {
     private Image image;
     private int width;
     private int height;
-    private double[][] processedImg;
-
-    final int ANGLE_RES = 360;
+    ImageDFT dft;
 
     /**
      * Creates an ImageTransformer with an image. The provided image is
@@ -492,112 +490,24 @@ public class ImageTransformer {
      * @return
      */
     public double getTextAlignmentAngle() {
-        //cutting out 0, 90, 180 from possiblility
-        final int ignoreBoundary = 10;
-        double[][] hough = processedImg;
-
-        width = hough.length;
-        height = hough[0].length;
-
-        double maxMag = 0;
-        int domCol = 0;
-
-        for (int col = ignoreBoundary; col < width - ignoreBoundary; col++ ) {
-            for (int row = 0; row < height; row++ ) {
-                if (col > width / 2 - ignoreBoundary && col < width / 2 + ignoreBoundary) col = 190;
-                if (hough[col][row] > maxMag ) {
-                    maxMag = hough[col][row];
-                    domCol = col;
-                }
-            }
-        }
-        double angle = domCol / 2.0;
-        return angle > 90.0 ? 180.0 - angle : angle;
-    }
-
-    public Image alignTextImage() {
-        final double threshold = 175.0;
+        int maxDim = Math.max(this.width, this.height);
+        int newSize = maxDim == 1 ? 1 : Integer.highestOneBit(maxDim - 1) * 2;
         /*Preprocess
             black and white
             Turn into power of 2 square image (pad with zeros) */
-        int maxDim = Math.max(this.width, this.height);
-        int newSize = maxDim == 1 ? 1 : Integer.highestOneBit(maxDim - 1) * 2;
         Complex[][] bwImg = preProcessing(newSize, newSize);
+        this.dft = new ImageDFT(bwImg);
 
-        //find DFT of this image
-        Complex[][] dftMatrix = fft2D(bwImg);
+        return this.dft.findDominantAngle();
+    }
 
-        //rotate image
-
-        //shift to centre the low frequencies unnecessary
-        dftMatrix = fftShift(dftMatrix);
-        processedImg = threshholdMagnitude(dftMatrix, threshold);
-        //analyze somehow to get angle
-        //find angle
-        processedImg = houghTranform(processedImg);
+    public Image alignTextImage() {
         double angle = getTextAlignmentAngle();
 
-        //for debugging
-        complexMatrixToImage(dftMatrix, newSize, newSize, "resources/threshfrequencySpectrumOutput.png");
-        processedImg = normalizeToGray(processedImg, processedImg.length, processedImg[0].length);
-        doubleMatrixToImage(processedImg, processedImg.length, processedImg[0].length, "resources/houghOutput.png");
+
 
         return null;
     }
-
-    /**
-     * debug method
-     * @param matrixImg
-     * @param width
-     * @param height
-     * @return
-     */
-    private Image complexMatrixToImage(Complex[][] matrixImg, int width, int height, String name) {
-        Image img = new Image(width, height);
-        for(int col = 0; col < width; col++) {
-            for(int row = 0; row < height; row++) {
-                int value = (int) matrixImg[col][row].magnitude();
-                img.setRGB(col, row, ((value & 0xFF) << 16) | ((value & 0xFF) << 8) | value & 0xFF);
-            }
-        }
-        img.save(name);
-        return img;
-    }
-
-    /**
-     * debug method
-     * @param matrixImg
-     * @param width
-     * @param height
-     * @return
-     */
-    private Image doubleMatrixToImage(double[][] matrixImg, int width, int height, String name) {
-        Image img = new Image(width, height);
-        for(int col = 0; col < width; col++) {
-            for(int row = 0; row < height; row++) {
-                int value = (int) matrixImg[col][row];
-                img.setRGB(col, row, ((value & 0xFF) << 16) | ((value & 0xFF) << 8) | value & 0xFF);
-            }
-        }
-        img.save(name);
-        return img;
-    }
-
-    private double[][] normalizeToGray(double[][] matrixImg, int width, int height) {
-        double max = 0.0;
-        for(int col = 0; col < width; col++) {
-            for(int row = 0; row < height; row++) {
-                if (matrixImg[col][row] > max) max = matrixImg[col][row];
-            }
-        }
-        for(int col = 0; col < width; col++) {
-            for(int row = 0; row < height; row++) {
-                matrixImg[col][row] = matrixImg[col][row] * 254.0 / max;
-            }
-        }
-        return matrixImg;
-    }
-
 
     /**
      * Obtain the black/white version of the image and pad with black until the next power of 2 size.
@@ -629,146 +539,5 @@ public class ImageTransformer {
         }
         //bwImage.save("resources/dftImgs/smallGreenBW.png");
         return imageMatrix;
-    }
-
-    /**
-     *
-     * @param img
-     * @return
-     */
-    private Complex[][] fft2D(Complex[][] img) {
-        int numRows = img.length;
-        int numCols = img[0].length;
-
-        for (int row = 0; row < numRows; row++) {
-            img[row] = fft(img[row]);
-        }
-
-        for (int col = 0; col < numCols; col++) {
-            Complex[] column = new Complex[numRows];
-            for (int row = 0; row < numRows; row++) {
-                column[row] = img[row][col];
-            }
-
-            Complex[] tfColumn = fft(column);
-
-            for (int row = 0; row < numRows; row++) {
-                img[row][col] = tfColumn[row];
-            }
-
-        }
-        return img;
-    }
-
-
-
-
-    /**
-     *  Recursively implements the Cooley-Turkey FFT algorithm
-     *
-     * @param intensities a power of 2 sized array containing grayscale intensities
-     * @return
-     */
-    private Complex[] fft(Complex[] intensities) {
-
-        int length = intensities.length;
-
-        if (length == 1) return new Complex[]{intensities[0]};
-
-        //if ((int)(Math.ceil((Math.log(length) / Math.log(2)))) == (int)(Math.floor(((Math.log(length) / Math.log(2)))))) {
-        if (length % 2 != 0) {
-            throw new IllegalArgumentException("Input array must be power of 2");
-        }
-
-        Complex[] even = new Complex[length / 2];
-        for (int i = 0; i < length / 2; i++)  {
-            even[i] = intensities[i * 2];
-        }
-        Complex[] evenResult = fft(even);
-
-        Complex[] odd = new Complex[length / 2];
-        for (int i = 0; i < length / 2; i++)  {
-            odd[i] = intensities[i * 2 + 1];
-        }
-        Complex[] oddResult = fft(odd);
-
-        Complex[] result = new Complex[length];
-        for (int i = 0; i < length / 2; i++) {
-            double rotation = -2.0 * i * Math.PI / length;
-            Complex complexValue =  new Complex(Math.cos(rotation), Math.sin(rotation));
-            result[i] = evenResult[i].add(complexValue.times(oddResult[i]));
-            result[i + length / 2] = evenResult[i].subtract(complexValue.times(oddResult[i]));
-        }
-
-
-
-        return result;
-    }
-
-    /**
-     * Probably unnecessary
-     * @param spectrum
-     * @return
-     */
-    private Complex[][] fftShift(Complex[][] spectrum) {
-        int numRows = spectrum.length;
-        int numCols = spectrum[0].length;
-        Complex[][] shifted = new Complex[numRows][numCols];
-
-        for (int row = 0; row < numRows; row++) {
-            for (int col = 0; col < numCols; col++) {
-                int newRow = (row + numRows / 2) % numRows;
-                int newCol = (col + numCols / 2) % numCols;
-                shifted[newRow][newCol] = spectrum[row][col];
-            }
-        }
-
-
-        return shifted;
-    }
-
-    /**
-     * Probably unnecessary
-     * @param frequencies
-     * @param threshold
-     * @return
-     */
-    private double[][] threshholdMagnitude(Complex[][] frequencies, double threshold) {
-        double[][] filteredMags = new double[frequencies.length][frequencies[0].length];
-        for (int row = 0; row < frequencies.length; row++) {
-            for (int col = 0; col < frequencies[0].length; col++) {
-                if (frequencies[row][col].magnitude() < threshold) {
-                    filteredMags[row][col] = 0.0;
-                } else {
-                    filteredMags[row][col] = frequencies[row][col].magnitude();
-                }
-            }
-        }
-
-        return filteredMags;
-    }
-
-    private double[][] houghTranform(double[][] lineImg) {
-
-        int houghHeight = (int) (Math.sqrt(2) * Math.max(lineImg.length, lineImg[0].length));
-        //int maxDist = (int) Math.sqrt(lineImg.length * lineImg.length / 2.0 + lineImg[0].length * lineImg[0].length / 2.0);
-
-        double[][] houghSpace = new double[ANGLE_RES][houghHeight * 2];
-
-        for (int i = 0; i < lineImg.length; i++) {
-            for (int j = 0; j < lineImg[0].length; j++) {
-                if (lineImg[i][j] > 0.0) {
-                    for (int angle = 0; angle < ANGLE_RES; angle++) {
-                        int x = i - lineImg.length / 2;
-                        int y = j - lineImg[0].length / 2;
-                        //forcing angles between [0, 180]
-                        int r = (int) (x * Math.cos(Math.toRadians(angle / 2.0)) + y * Math.sin(Math.toRadians(angle / 2.0)));
-                        r += houghHeight;
-                        houghSpace[angle][r]++;
-                    }
-                }
-            }
-        }
-        return houghSpace;
     }
 }
