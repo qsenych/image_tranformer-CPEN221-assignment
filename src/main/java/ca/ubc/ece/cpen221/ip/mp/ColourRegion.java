@@ -58,29 +58,11 @@ public class ColourRegion {
     }
 
     /**
-     * Converts this colour region to a new Rectangle instance
-     *
-     * @param rect A reference to a Rectangle to be overwritten with
-     *            this ColourRegion's Rectangle representation.
-     *            If false is returned nothing happens to this reference
-     * @return: True if Colour region can be successfully converted to a Rectangle
-     *          False if not.
-     */
-    public boolean toRectangle(Rectangle rect) {
-        if (isValidRect()) {
-            rect = new Rectangle(xTopLeft, yTopLeft, xBottomRight, yBottomRight);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * Checks if this ColourRegion can be successfully converted to a Rectangle
      *
      * @return true if it can be converted, false otherwise
      */
-    private boolean isValidRect() {
+    public boolean isValidRect() {
         return xTopLeft >= 0 && yTopLeft >= 0
                 && xBottomRight > xTopLeft && yBottomRight > yTopLeft;
     }

@@ -32,7 +32,19 @@ public class Task4Tests {
         ImageTransformer t1 = new ImageTransformer(smallGreen);
         Image result = t1.greenScreen(Color.RED, pink);
         assertEquals(expected, result);
+    }
 
+    /* test tiling */
+    @Test
+    public void greenTest3() {
+        Image img1 = new Image("resources/clapper-green.jpg");
+        Image tiger = new Image("resources/187039.jpg");
+        Image expected = new Image("resources/clapper187039.png");
+        Color greenish = new Color (0x0D, 0xBE, 0x0E);
+
+        ImageTransformer t1 = new ImageTransformer(img1);
+        Image result = t1.greenScreen(greenish, tiger);
+        assertEquals(expected, result);
     }
 
 }

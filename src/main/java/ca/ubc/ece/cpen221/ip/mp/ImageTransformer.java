@@ -187,7 +187,7 @@ public class ImageTransformer {
         int newWidth = rect.xBottomRight - rect.xTopLeft;
         int newHeight = rect.yBottomRight - rect.yTopLeft;
 
-        if (newHeight > height || newWidth < width) {
+        if (newHeight > height || newWidth > width) {
             throw new IllegalArgumentException("The rectangle must fit within the image");
         }
 
@@ -216,9 +216,9 @@ public class ImageTransformer {
             for (int row = 0; row < this.height; row++) {
                 int originalPixel = image.getRGB(col, row);
 
-                ArrayList<Integer> reds = new ArrayList<Integer>();
-                ArrayList<Integer> greens = new ArrayList<Integer>();
-                ArrayList<Integer> blues = new ArrayList<Integer>();
+                ArrayList<Integer> reds = new ArrayList<>();
+                ArrayList<Integer> greens = new ArrayList<>();
+                ArrayList<Integer> blues = new ArrayList<>();
 
                 for(int i = -1; i <= 1; i++) {
                     for(int j = -1; j <= 1; j++) {
@@ -274,9 +274,9 @@ public class ImageTransformer {
             for (int row = 0; row < this.height; row++) {
                 int originalPixel = image.getRGB(col, row);
 
-                ArrayList<Integer> reds = new ArrayList<Integer>();
-                ArrayList<Integer> greens = new ArrayList<Integer>();
-                ArrayList<Integer> blues = new ArrayList<Integer>();
+                ArrayList<Integer> reds = new ArrayList<>();
+                ArrayList<Integer> greens = new ArrayList<>();
+                ArrayList<Integer> blues = new ArrayList<>();
 
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
@@ -390,15 +390,14 @@ public class ImageTransformer {
     public Image greenScreen(Color screenColour, Image backgroundImage) {
         Image keyedImg = this.image;
         ColourRegion region = findLargestRegion(screenColour);
-        Rectangle rect = new Rectangle(0, 0, 1, 1);
 
-        if (!region.toRectangle(rect)) {
+        if (!region.isValidRect()) {
             return keyedImg;
         }
 
 
-        for (int col = rect.xTopLeft, bgCol = 0; col <= rect.xBottomRight; col++, bgCol++) {
-            for (int row = rect.yTopLeft, bgRow = 0; row <= rect.yBottomRight; row++, bgRow++) {
+        for (int col = region.xTopLeft, bgCol = 0; col <= region.xBottomRight; col++, bgCol++) {
+            for (int row = region.yTopLeft, bgRow = 0; row <= region.yBottomRight; row++, bgRow++) {
 
                 //for tiling the background image
                 if (bgCol >= backgroundImage.width()) {
@@ -444,7 +443,6 @@ public class ImageTransformer {
                 }
             }
         }
-
         return region;
     }
 
@@ -581,7 +579,7 @@ public class ImageTransformer {
      * @param matrixImg A non-empty matrix representation of an image
      * @param width the width of the matrixImg
      * @param height the height of the matrixImg
-     * @param name a string for the name of the image to save as (is passed into Image.save)
+     * @param name a string for the name of the image to save as (is passed into Image method save)
      * @return A grayscale image of the matrixImg representation
      */
     public static Image doubleMatrixToImage(double[][] matrixImg, int width, int height, String name) {
@@ -597,13 +595,12 @@ public class ImageTransformer {
     }
 
     /**
-     * a debug method intended for use with doubleMatrixToImage but not necessary
-     * Normalizes all values in matrixImg between NORMALIZATION_MAX and 0.0
+     * A debug method intended for use with doubleMatrixToImage but not necessary.
      *
      * @param matrixImg A non-empty matrix representation of an image
      * @param width the width of the matrixImg
      * @param height the height of the matrixImg
-     * @return
+     * @return A double matrix normalized between NORMALIZATION_MAX and 0.0
      */
     public static double[][] normalizeToGray(double[][] matrixImg, int width, int height) {
         double max = 0.0;

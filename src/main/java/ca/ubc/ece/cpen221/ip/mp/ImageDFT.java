@@ -141,7 +141,7 @@ public class ImageDFT {
             complexImg[col] = fft(complexImg[col]);
         }
 
-        for (int row = 0; row < numCols; row++) {
+        for (int row = 0; row < numRows; row++) {
             Complex[] fullRow = new Complex[numCols];
             for (int col = 0; col < numCols; col++) {
                 fullRow[col] = complexImg[col][row];
@@ -160,7 +160,7 @@ public class ImageDFT {
      *  Recursively implements the Cooley-Turkey FFT algorithm
      *
      * @param intensities a power of 2 sized array containing grayscale intensities
-     * @return
+     * @return A Complex[] of the fourier transform of intensities
      */
     private Complex[] fft(Complex[] intensities) {
         int length = intensities.length;
