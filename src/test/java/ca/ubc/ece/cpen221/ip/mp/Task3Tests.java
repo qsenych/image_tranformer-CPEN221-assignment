@@ -59,6 +59,26 @@ public class Task3Tests {
         assertEquals(cs, 0.86814833, 0.001);
     }
 
+    /* test small, different rows/cols same size same colour*/
+    @Test
+    public void TestCS6() {
+        Image img1 = new Image("resources/cosImg6.png");
+        Image img2 = new Image("resources/cosImg7.png");
+
+        double cs = ImageProcessing.cosineSimilarity(img1, img2);
+        assertEquals(cs, 1.0, 0.001);
+    }
+
+    /* test small, different rows/cols same size dif colour with colour (not gray) */
+    @Test
+    public void TestCS7() {
+        Image img1 = new Image("resources/cosImg6.png");
+        Image img2 = new Image("resources/cosImg8.png");
+
+        double cs = ImageProcessing.cosineSimilarity(img1, img2);
+        assertEquals(cs, 0.51639777, 0.001);
+    }
+
     /* List test with 3x3 custom images */
     @Test
     public void TestCSList1 () {
