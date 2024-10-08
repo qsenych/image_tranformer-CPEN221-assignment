@@ -49,9 +49,13 @@ public class ColourRegion {
                 _xBottomRight < _xTopLeft || _yBottomRight < _yTopLeft) {
             throw new IllegalArgumentException("Invalid rectangle specified.");
         }
+        xTopLeft = _xTopLeft;
+        yTopLeft = _yTopLeft;
+        xBottomRight = _xBottomRight;
+        yBottomRight = _yBottomRight;
+
         ogWidth = width;
         ogHeight = height;
-
 
         pixelCount = 0;
         pixels = new boolean[ogWidth][ogHeight];

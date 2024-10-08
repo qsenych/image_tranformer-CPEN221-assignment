@@ -47,4 +47,16 @@ public class Task4Tests {
         assertEquals(expected, result);
     }
 
+    /* test 2 single pixels */
+    @Test
+    public void greenTest4() {
+        Image img1 = new Image("resources/tests/2-small-identicle-green.png");
+        Image background = new Image("resources/tests/2-small-identicle-green.png");
+        Image expected = new Image("resources/tests/2-small-identicle-greenredresult.png");
+
+        ImageTransformer t1 = new ImageTransformer(img1);
+        Image result = t1.greenScreen(Color.GREEN, background);
+        assertEquals(expected, result);
+    }
+
 }

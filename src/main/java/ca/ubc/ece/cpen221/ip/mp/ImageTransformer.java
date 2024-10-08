@@ -391,7 +391,7 @@ public class ImageTransformer {
         Image keyedImg = this.image;
         ColourRegion region = findLargestRegion(screenColour);
 
-        if (!region.isValidRect()) {
+        if (region.pixelCount == 0) {
             return keyedImg;
         }
 
@@ -428,8 +428,6 @@ public class ImageTransformer {
         ColourRegion region = new ColourRegion(0,0,0,0, this.width, this.height);
         boolean[][] visited = new boolean[this.width][this.height];
         int biggestPixelCount = 0;
-
-
 
         for (int col = 0; col < this.width; ++col) {
             for (int row = 0; row < this.height; ++row) {
