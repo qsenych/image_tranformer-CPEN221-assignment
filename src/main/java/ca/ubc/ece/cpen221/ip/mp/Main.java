@@ -22,10 +22,11 @@ public class Main {
         Image img9 = new Image("resources/tests/rotate-15.png");
         Image img = new Image("resources/tests/blockRotate-37.png");
 
-        ImageTransformer t2 = new ImageTransformer(img1);
+        ImageTransformer t2 = new ImageTransformer(img5);
+
 
         Image outImg = t2.alignTextImage();
-        outImg.save("resources/tests/Williamson-45result.png");
+        outImg.save("resources/rotatedImg.png");
 
         int i = 0;
 

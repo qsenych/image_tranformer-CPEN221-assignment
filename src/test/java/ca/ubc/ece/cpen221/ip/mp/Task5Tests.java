@@ -66,7 +66,7 @@ public class Task5Tests {
         Image result = t1.alignTextImage();
 
         double sim = ImageProcessing.cosineSimilarity(expected, result);
-        assertEquals(sim > 0.9, true);
+        assertEquals(sim > 0.98, true);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class Task5Tests {
         Image result = t1.alignTextImage();
 
         double sim = ImageProcessing.cosineSimilarity(expected, result);
-        assertEquals(sim > 0.9, true);
+        assertEquals(sim > 0.98, true);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class Task5Tests {
         Image result = t1.alignTextImage();
 
         double sim = ImageProcessing.cosineSimilarity(expected, result);
-        assertEquals(sim > 0.9, true);
+        assertEquals(sim > 0.98, true);
     }
 
     @Test
@@ -99,6 +99,6 @@ public class Task5Tests {
         Image result = t1.alignTextImage();
 
         double sim = ImageProcessing.cosineSimilarity(expected, result);
-        assertEquals(sim > 0.9, true);
+        assertEquals(sim > 0.98, true);
     }
 }

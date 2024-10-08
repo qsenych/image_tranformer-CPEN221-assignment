@@ -70,6 +70,8 @@ public class ImageProcessing {
     }
 
     /**
+     * Compares a List of images for the best match to the original image
+     *
      * @param img A non empty image with the same width and height as every image in matchingCandidates
      * @param matchingCandidates A non-null not empty List of images with the same width and height as img
      * @return A list including all images in matchingCandidates, sorted using cosine similarity, with best match appearing first

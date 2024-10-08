@@ -29,6 +29,8 @@ public class ImageTransformer {
     private int height;
     ImageDFT dft;
 
+    public static final double NORMALIZATION_MAX = 254.0;
+
     /**
      * Creates an ImageTransformer with an image. The provided image is
      * <strong>never</strong> changed by any of the operations.
@@ -175,9 +177,19 @@ public class ImageTransformer {
         return posterizedImage;
     }
 
+    /**
+     * Clips a rectangle of the image
+     *
+     * @param rect: A non-null rectangle instance that fits within the image
+     * @return A smaller image described by the Rectangle
+     */
     public Image clip(Rectangle rect) {
         int newWidth = rect.xBottomRight - rect.xTopLeft;
         int newHeight = rect.yBottomRight - rect.yTopLeft;
+
+        if (newHeight > height || newWidth < width) {
+            throw new IllegalArgumentException("The rectangle must fit within the image");
+        }
 
         Image clippedImg = new Image(newWidth + 1, newHeight + 1);
         for (int col = 0; col <= newWidth; col++) {
@@ -194,7 +206,7 @@ public class ImageTransformer {
     /* ===== TASK 2 ===== */
 
     /**
-     *  Performs simple denoising by replacing each colour's value on a pixel by the median value of that and its neighbours
+     * Performs simple denoising by replacing each colour's value on a pixel by the median value of that and its neighbours
      *
      * @return a cleaned up Image.
      */
@@ -203,11 +215,7 @@ public class ImageTransformer {
         for (int col = 0; col < this.width; col++) {
             for (int row = 0; row < this.height; row++) {
                 int originalPixel = image.getRGB(col, row);
-                //(col-1, row+1), (col, row+1),  (col+1, row+1)
-                //(col-1, row)       pixel       (col+1, row)
-                //(col-1, row-1)  (col, row-1),  (col+1, row-1)
 
-                int redSum = 0;
                 ArrayList<Integer> reds = new ArrayList<Integer>();
                 ArrayList<Integer> greens = new ArrayList<Integer>();
                 ArrayList<Integer> blues = new ArrayList<Integer>();
@@ -265,11 +273,7 @@ public class ImageTransformer {
         for (int col = 0; col < this.width; col++) {
             for (int row = 0; row < this.height; row++) {
                 int originalPixel = image.getRGB(col, row);
-                //(col-1, row+1), (col, row+1),  (col+1, row+1)
-                //(col-1, row)       pixel       (col+1, row)
-                //(col-1, row-1)  (col, row-1),  (col+1, row-1)
 
-                int redSum = 0;
                 ArrayList<Integer> reds = new ArrayList<Integer>();
                 ArrayList<Integer> greens = new ArrayList<Integer>();
                 ArrayList<Integer> blues = new ArrayList<Integer>();
@@ -308,7 +312,7 @@ public class ImageTransformer {
             for (int row = 0; row < this.height; row += blockSize) {
                 int xBottomRight;
                 int yBottomRight;
-                //check for limits
+
                 xBottomRight = Math.min(col + blockSize, this.width);
                 yBottomRight = Math.min(row + blockSize, this.height);
 
@@ -317,21 +321,16 @@ public class ImageTransformer {
                 setRectColour(block, colour, blockedImage);
             }
         }
-
         return blockedImage;
     }
 
     /**
      * Helper function to calculate average colour over a rectangle
      *
-     * @param rect: A non-0 the rectangle to be averaged over
+     * @param rect: The rectangle to be averaged over
      * @return An integer describing the average RGB colour value in the rectangle
      */
     private int averageRectColour(Rectangle rect) {
-        /*int redSum = 0;
-        int greenSum = 0;
-        int blueSum = 0;
-         */
         long pixelCount = 0;
 
         BigInteger redSum = BigInteger.ZERO;
@@ -378,13 +377,25 @@ public class ImageTransformer {
     /* ===== TASK 4 ===== */
 
 
+    /**
+     * Replaces the largest continuous region of exactly screenColour with the background image
+     * the background image will tile if it is not big enough.
+     *
+     * @param screenColour a non-null Color instance to be matched exactly
+     * @param backgroundImage An image to overlay over the largest region of screenColor
+     * @return The original image with background image overlayed over a rectangle of the largest
+     *      continuous region of screenColour. If exactly screenColour is not on the image,
+     *      an unchanged image is returned.
+     */
     public Image greenScreen(Color screenColour, Image backgroundImage) {
         Image keyedImg = this.image;
         ColourRegion region = findLargestRegion(screenColour);
+        Rectangle rect = new Rectangle(0, 0, 1, 1);
 
-        if (!region.isValidRect()) return keyedImg;
+        if (!region.toRectangle(rect)) {
+            return keyedImg;
+        }
 
-        Rectangle rect = region.toRectangle();
 
         for (int col = rect.xTopLeft, bgCol = 0; col <= rect.xBottomRight; col++, bgCol++) {
             for (int row = rect.yTopLeft, bgRow = 0; row <= rect.yBottomRight; row++, bgRow++) {
@@ -406,6 +417,14 @@ public class ImageTransformer {
         return keyedImg;
     }
 
+    /**
+     * A method to find the largest region of exactly screenColour by number of pixels on the image
+     *
+     * @param screenColour the exact colour to find the largest region of.
+     * @return A ColourRegion object containing information such as the matching pixel count,
+     *      the enclosing rectangle of the region, and a matrix of booleans corresponding to the
+     *      matching pixels on the original image.
+     */
     private ColourRegion findLargestRegion(Color screenColour) {
         ColourRegion region = new ColourRegion(0,0,0,0, this.width, this.height);
         boolean[][] visited = new boolean[this.width][this.height];
@@ -430,13 +449,14 @@ public class ImageTransformer {
     }
 
     /**
+     * An implementation of breadth first search for finding the size of a contiguous region of screenColour pixels
      *
-     *
-     * @param col
-     * @param row
-     * @param screenColour
-     * @param visited
-     * @return pixel count of colours
+     * @param col the column of the first matching pixel in the new region
+     * @param row the row of the first matching pixel in the new region
+     * @param screenColour the exact colour of the pixel to be matched
+     * @param visited a boolean matrix keeping track of which pixels have been visited or not
+     * @return A colour region describing pixel count of the colour found, the rectangle enclosing it, and the
+     *      exact matching pixels on the original image
      */
     private ColourRegion bfs (int col, int row, Color screenColour, boolean[][] visited) {
         Queue<int[]> queue = new LinkedList<>();
@@ -485,15 +505,22 @@ public class ImageTransformer {
     /* ===== TASK 5 ===== */
 
     /**
-     * determines the angle by which the image should be rotated
-     * to get the text aligned
-     * @return
+     * Determines the angle by which the image should be rotated in order to align the text.
+     * If the image does not need aligning, the image will be rotated off axis by +- ~3 degrees
+     *
+     * @return a double between -90 and 90 to rotate the image by
      */
     public double getTextAlignmentAngle() {
         this.dft = new ImageDFT(this.image);
         return this.dft.findDominantAngle();
     }
 
+    /**
+     * Aligns the text in an image to the horizontal.
+     * The image must need aligning or the text will be misaligned +- ~3 degrees
+     *
+     * @return An image with the corrected text angle, its size is the same or larger to the original image
+     */
     public Image alignTextImage() {
         double angle = getTextAlignmentAngle();
         double radians = -1.0 * Math.toRadians(angle);
@@ -521,4 +548,75 @@ public class ImageTransformer {
         return rotatedImg;
     }
 
+
+    /* ===== TASK 5 DEBUG METHODS ===== */
+
+    /**
+     * debug method to turn a complex matrix into an image for visualization
+     *
+     * @param matrixImg A non-empty matrix representation of an image
+     * @param width the width of the matrixImg
+     * @param height the height of the matrixImg
+     * @param name a string for the name of the image to save as (is passed into a save method)
+     * @return A grayscale image of the matrixImg representation
+     */
+    public static Image complexMatrixToImage(Complex[][] matrixImg, int width, int height, String name) {
+        Image img = new Image(width, height);
+        for(int col = 0; col < width; col++) {
+            for(int row = 0; row < height; row++) {
+                int value = (int) matrixImg[col][row].magnitude();
+                img.setRGB(col, row, ((value & 0xFF) << 16) | ((value & 0xFF) << 8) | value & 0xFF);
+            }
+        }
+        img.save(name);
+        return img;
+    }
+
+    /**
+     * debug method to turn a double matrix into an image for visualization.
+     * The matrixImg should be passed through normalizeToGray to see actual contrast
+     * Otherwise, most values will be very nearly black.
+     * Also saves the image as "name"
+     *
+     * @param matrixImg A non-empty matrix representation of an image
+     * @param width the width of the matrixImg
+     * @param height the height of the matrixImg
+     * @param name a string for the name of the image to save as (is passed into Image.save)
+     * @return A grayscale image of the matrixImg representation
+     */
+    public static Image doubleMatrixToImage(double[][] matrixImg, int width, int height, String name) {
+        Image img = new Image(width, height);
+        for(int col = 0; col < width; col++) {
+            for(int row = 0; row < height; row++) {
+                int value = (int) matrixImg[col][row];
+                img.setRGB(col, row, ((value & 0xFF) << 16) | ((value & 0xFF) << 8) | value & 0xFF);
+            }
+        }
+        img.save(name);
+        return img;
+    }
+
+    /**
+     * a debug method intended for use with doubleMatrixToImage but not necessary
+     * Normalizes all values in matrixImg between NORMALIZATION_MAX and 0.0
+     *
+     * @param matrixImg A non-empty matrix representation of an image
+     * @param width the width of the matrixImg
+     * @param height the height of the matrixImg
+     * @return
+     */
+    public static double[][] normalizeToGray(double[][] matrixImg, int width, int height) {
+        double max = 0.0;
+        for(int col = 0; col < width; col++) {
+            for(int row = 0; row < height; row++) {
+                if (matrixImg[col][row] > max) max = matrixImg[col][row];
+            }
+        }
+        for(int col = 0; col < width; col++) {
+            for(int row = 0; row < height; row++) {
+                matrixImg[col][row] = matrixImg[col][row] * NORMALIZATION_MAX / max;
+            }
+        }
+        return matrixImg;
+    }
 }
