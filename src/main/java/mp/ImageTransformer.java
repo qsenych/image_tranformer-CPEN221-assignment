@@ -1,7 +1,7 @@
-package ca.ubc.ece.cpen221.ip.mp;
+package mp;
 
-import ca.ubc.ece.cpen221.ip.core.Image;
-import ca.ubc.ece.cpen221.ip.core.Rectangle;
+import core.Image;
+import core.Rectangle;
 
 import java.awt.Color;
 import java.math.BigInteger;

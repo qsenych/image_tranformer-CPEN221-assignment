@@ -2,7 +2,6 @@ plugins {
     id 'java'
 }
 
-group 'ca.ece.ubc.cpen221.ip'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.17

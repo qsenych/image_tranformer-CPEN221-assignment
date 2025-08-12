@@ -1,4 +1,4 @@
-package ca.ubc.ece.cpen221.ip.mp;
+package mp;
 
 /**
  * An immutable datatype representing a complex number (re + im * j) where j is sqrt(-1)

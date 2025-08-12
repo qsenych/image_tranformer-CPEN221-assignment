@@ -1,4 +1,4 @@
-package ca.ubc.ece.cpen221.ip.core;
+package core;
 
 /******************************************************************************
  *  Data type for manipulating individual pixels of an image. The original

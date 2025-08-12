@@ -1,4 +1,4 @@
-package ca.ubc.ece.cpen221.ip.core;
+package core;
 
 /**
  * This datatype represents an <strong>immutable</strong> Rectangle

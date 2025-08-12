@@ -1,4 +1,4 @@
-package ca.ubc.ece.cpen221.ip.core;
+package core;
 
 import java.util.Arrays;
 

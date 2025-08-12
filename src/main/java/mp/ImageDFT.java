@@ -1,6 +1,6 @@
-package ca.ubc.ece.cpen221.ip.mp;
+package mp;
 
-import ca.ubc.ece.cpen221.ip.core.Image;
+import core.Image;
 
 import java.awt.Color;
 
